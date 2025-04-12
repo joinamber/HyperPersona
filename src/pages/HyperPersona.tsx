@@ -1,10 +1,8 @@
-
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import ProductForm, { ProductImage, FormValues } from '@/components/hyper-persona/ProductForm';
 import PersonaCard from '@/components/hyper-persona/PersonaCard';
 import EmptyState from '@/components/hyper-persona/EmptyState';
-import ApiKeyInput from '@/components/hyper-persona/ApiKeyInput';
 import { generatePersonas, Persona } from '@/services/personaService';
 import { Zap, LineChart, DollarSign } from 'lucide-react';
 
@@ -100,10 +98,6 @@ const HyperPersona = () => {
               </p>
             </div>
           </div>
-        </div>
-
-        <div className="flex justify-center mb-10">
-          <ApiKeyInput />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
