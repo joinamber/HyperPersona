@@ -25,6 +25,10 @@ const GroqApiKeyInput: React.FC = () => {
         title: "API key saved",
         description: "Your Groq API key has been saved for this session.",
       });
+      
+      // Log to confirm the key has been saved
+      console.log("Groq API key saved to localStorage (first 3 chars):", apiKey.substring(0, 3) + '***');
+      
       setIsVisible(false);
     } else {
       toast({
@@ -35,18 +39,41 @@ const GroqApiKeyInput: React.FC = () => {
     }
   };
 
+  // Function to clear the API key (useful for debugging)
+  const handleClearKey = () => {
+    localStorage.removeItem('groq_api_key');
+    setApiKey('');
+    toast({
+      title: "API key cleared",
+      description: "Your Groq API key has been removed.",
+    });
+    console.log("Groq API key removed from localStorage");
+  };
+
   return (
     <div className="mb-6">
       {!isVisible ? (
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="flex items-center gap-2 text-indigo-600 border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
-          onClick={() => setIsVisible(true)}
-        >
-          <Key className="h-4 w-4" />
-          {apiKey ? "Change Groq API Key" : "Add Groq API Key"}
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex items-center gap-2 text-indigo-600 border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+            onClick={() => setIsVisible(true)}
+          >
+            <Key className="h-4 w-4" />
+            {apiKey ? "Change Groq API Key" : "Add Groq API Key"}
+          </Button>
+          {apiKey && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 transition-colors"
+              onClick={handleClearKey}
+            >
+              Clear API Key
+            </Button>
+          )}
+        </div>
       ) : (
         <div className="space-y-3">
           <div className="flex items-center gap-2">

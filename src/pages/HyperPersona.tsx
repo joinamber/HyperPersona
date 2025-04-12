@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import ProductForm, { ProductImage, FormValues } from '@/components/hyper-persona/ProductForm';
 import PersonaCard from '@/components/hyper-persona/PersonaCard';
@@ -14,6 +14,17 @@ const HyperPersona = () => {
   const [productImages, setProductImages] = useState<ProductImage[]>([]);
   const [personas, setPersonas] = useState<Persona[]>([]);
   const { toast } = useToast();
+  
+  // Check if API key exists on load
+  useEffect(() => {
+    const hasApiKey = localStorage.getItem('groq_api_key');
+    if (!hasApiKey) {
+      toast({
+        title: "No Groq API Key",
+        description: "Please add your Groq API key to generate real personas.",
+      });
+    }
+  }, [toast]);
   
   const refreshPersona = (personaId: string) => {
     toast({
@@ -39,13 +50,16 @@ const HyperPersona = () => {
   const onSubmit = async (data: FormValues) => {
     setIsGenerating(true);
     try {
+      console.log("Submitting form data to generate personas");
       const response = await generatePersonas(data, productImages);
+      console.log("Response received:", response);
       setPersonas(response.personas);
       toast({
         title: "Personas generated successfully!",
         description: "View your customer personas below.",
       });
     } catch (error) {
+      console.error("Error in persona generation:", error);
       toast({
         title: "Error generating personas",
         description: "Please try again or contact support.",

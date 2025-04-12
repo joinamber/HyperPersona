@@ -1,3 +1,4 @@
+
 import { FormValues, ProductImage } from '@/components/hyper-persona/ProductForm';
 
 export interface Persona {
@@ -78,12 +79,13 @@ export const generatePersonas = async (data: FormValues, images: ProductImage[])
   const apiKey = localStorage.getItem('groq_api_key');
   
   if (!apiKey) {
-    // If no API key is found, fall back to mock data for demo purposes
     console.log("No Groq API key found, using mock data");
     return getMockPersonas();
   }
   
   try {
+    console.log("Making API call to Groq with key:", apiKey.substring(0, 3) + '***');
+    
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -104,20 +106,23 @@ export const generatePersonas = async (data: FormValues, images: ProductImage[])
       })
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('API Error:', errorData);
-      throw new Error(`API error: ${response.status}`);
-    }
+    const responseData = await response.json();
+    console.log("Groq API response:", responseData);
 
-    const data = await response.json();
+    if (!response.ok) {
+      console.error('API Error:', responseData);
+      throw new Error(`API error: ${response.status} - ${responseData.error?.message || 'Unknown error'}`);
+    }
     
     // Parse the LLM response which should be in JSON format
     try {
       // Extract the content from the response
-      const content = data.choices[0].message.content;
+      const content = responseData.choices[0].message.content;
+      console.log("Raw content from API:", content);
+      
       // Parse the JSON from the content
       const parsedResponse = JSON.parse(content);
+      console.log("Parsed response:", parsedResponse);
       return parsedResponse;
     } catch (parseError) {
       console.error('Error parsing LLM response:', parseError);
