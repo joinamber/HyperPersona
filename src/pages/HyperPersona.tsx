@@ -5,6 +5,7 @@ import PersonaCard from '@/components/hyper-persona/PersonaCard';
 import EmptyState from '@/components/hyper-persona/EmptyState';
 import { generatePersonas, Persona } from '@/services/personaService';
 import { Zap, LineChart, DollarSign } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const HyperPersona = () => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -51,6 +52,10 @@ const HyperPersona = () => {
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const handleContactClick = () => {
+    window.location.href = 'mailto:hello@coaltlab.com';
   };
 
   return (
@@ -130,6 +135,36 @@ const HyperPersona = () => {
           </div>
         </div>
       </div>
+
+      {/* Bottom CTA Banner */}
+      <div className="bg-indigo-600 py-16 mt-24">
+        <div className="container mx-auto px-4 max-w-4xl text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Ready to Transform Your User Research?</h2>
+          <p className="text-xl text-indigo-100 mb-8 max-w-2xl mx-auto">
+            Join forward-thinking companies using AI-powered personas to gain deeper insights, faster and more affordably.
+          </p>
+          <Button 
+            onClick={handleContactClick}
+            className="bg-white text-indigo-600 hover:bg-indigo-50 text-lg px-8 py-6 h-auto font-semibold"
+          >
+            Contact Us Today
+          </Button>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="bg-indigo-900 text-white py-8">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            <div className="font-bold text-xl">HYPERPERSONA</div>
+            <div className="text-sm text-indigo-200">© 2025 HyperPersona. All rights reserved.</div>
+            <div className="text-sm text-right">
+              <div className="font-medium">A project by Co.Alt Lab</div>
+              <div>hello@coaltlab.com</div>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
