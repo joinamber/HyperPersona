@@ -1,4 +1,3 @@
-
 import { FormValues, ProductImage } from '@/components/hyper-persona/ProductForm';
 
 export interface Persona {
@@ -47,7 +46,7 @@ Here is the product input:
 ${imageDescriptions}
 ${data.productReviews ? `[Customer Review Snippets: ${data.productReviews}]` : ''}
 
-Respond in structured JSON format that matches the following structure:
+I need you to respond with only the JSON data in this exact format:
 {
   "personas": [
     {
@@ -65,7 +64,36 @@ Respond in structured JSON format that matches the following structure:
     }
   ]
 }
+
+Only return JSON, do not include markdown formatting such as \`\`\`json or any other explanation text.
 `;
+};
+
+/**
+ * Extract JSON from potentially messy LLM response
+ */
+const extractJSONFromResponse = (text: string): any => {
+  try {
+    // First try to parse the whole response as JSON
+    return JSON.parse(text);
+  } catch (error) {
+    console.log("Failed to parse entire response as JSON, attempting to extract JSON portion", error);
+    
+    try {
+      // Look for JSON object in the response using regex
+      const jsonMatch = text.match(/{[\s\S]*}/);
+      if (jsonMatch) {
+        const jsonStr = jsonMatch[0];
+        console.log("Extracted JSON string:", jsonStr);
+        return JSON.parse(jsonStr);
+      } else {
+        throw new Error("No JSON object found in response");
+      }
+    } catch (extractError) {
+      console.error("Failed to extract JSON:", extractError);
+      throw new Error("Failed to extract valid JSON from LLM response");
+    }
+  }
 };
 
 /**
@@ -106,30 +134,47 @@ export const generatePersonas = async (data: FormValues, images: ProductImage[])
       })
     });
 
-    const responseData = await response.json();
-    console.log("Groq API response:", responseData);
-
     if (!response.ok) {
-      console.error('API Error:', responseData);
-      throw new Error(`API error: ${response.status} - ${responseData.error?.message || 'Unknown error'}`);
+      const errorText = await response.text();
+      console.error('API Error:', errorText);
+      throw new Error(`API error: ${response.status} - ${errorText || 'Unknown error'}`);
     }
     
-    // Parse the LLM response which should be in JSON format
+    const responseData = await response.json();
+    console.log("Groq API full response:", responseData);
+
+    // Extract the content from the response
+    const content = responseData.choices[0].message.content;
+    console.log("Raw content from API:", content);
+    
+    // Parse the JSON from the content using our improved extraction function
     try {
-      // Extract the content from the response
-      const content = responseData.choices[0].message.content;
-      console.log("Raw content from API:", content);
+      const parsedResponse = extractJSONFromResponse(content);
+      console.log("Successfully parsed response:", parsedResponse);
       
-      // Parse the JSON from the content
-      const parsedResponse = JSON.parse(content);
-      console.log("Parsed response:", parsedResponse);
+      // Validate the response has the expected structure
+      if (!parsedResponse.personas || !Array.isArray(parsedResponse.personas)) {
+        console.error("Invalid response structure:", parsedResponse);
+        throw new Error("Response doesn't contain the expected personas array");
+      }
+      
+      // Ensure each persona has an ID
+      parsedResponse.personas = parsedResponse.personas.map((persona: any, index: number) => {
+        if (!persona.id) {
+          persona.id = `persona-${index + 1}`;
+        }
+        return persona;
+      });
+      
       return parsedResponse;
     } catch (parseError) {
       console.error('Error parsing LLM response:', parseError);
-      throw new Error('Failed to parse LLM response');
+      console.log('Falling back to mock data due to parse error');
+      return getMockPersonas();
     }
   } catch (error) {
     console.error('Error calling Groq API:', error);
+    console.log('Falling back to mock data due to API error');
     // Fall back to mock data if the API call fails
     return getMockPersonas();
   }
