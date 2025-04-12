@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import ProductForm, { ProductImage, FormValues } from '@/components/hyper-persona/ProductForm';
 import PersonaCard from '@/components/hyper-persona/PersonaCard';
 import EmptyState from '@/components/hyper-persona/EmptyState';
+import ApiKeyInput from '@/components/hyper-persona/ApiKeyInput';
 import { generatePersonas, Persona } from '@/services/personaService';
 
 const HyperPersona = () => {
@@ -60,6 +61,10 @@ const HyperPersona = () => {
         <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
           Transform your product description into detailed customer personas with AI-powered insights
         </p>
+      </div>
+
+      <div className="flex justify-center mb-8">
+        <ApiKeyInput />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
