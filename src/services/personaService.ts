@@ -68,31 +68,30 @@ Respond in structured JSON format that matches the following structure:
 };
 
 /**
- * Generate personas using the OpenAI API
+ * Generate personas using the Groq API
  */
 export const generatePersonas = async (data: FormValues, images: ProductImage[]): Promise<any> => {
   const prompt = createPersonaPrompt(data, images);
   console.log("Generated prompt for LLM:", prompt);
   
-  // In a production environment, you would use environment variables for the API key
-  // For demo purposes, you could have the user input their API key in a form
-  const apiKey = localStorage.getItem('openai_api_key');
+  // Get the Groq API key from localStorage
+  const apiKey = localStorage.getItem('groq_api_key');
   
   if (!apiKey) {
     // If no API key is found, fall back to mock data for demo purposes
-    console.log("No API key found, using mock data");
+    console.log("No Groq API key found, using mock data");
     return getMockPersonas();
   }
   
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'gpt-4o', // or another model like gpt-3.5-turbo
+        model: 'llama3-70b-8192', // Groq's llama3 model
         messages: [
           {
             role: 'user',
@@ -102,8 +101,6 @@ export const generatePersonas = async (data: FormValues, images: ProductImage[])
         temperature: 0.7,
         max_tokens: 2000,
         top_p: 1.0,
-        frequency_penalty: 0,
-        presence_penalty: 0
       })
     });
 
@@ -127,7 +124,7 @@ export const generatePersonas = async (data: FormValues, images: ProductImage[])
       throw new Error('Failed to parse LLM response');
     }
   } catch (error) {
-    console.error('Error calling LLM API:', error);
+    console.error('Error calling Groq API:', error);
     // Fall back to mock data if the API call fails
     return getMockPersonas();
   }

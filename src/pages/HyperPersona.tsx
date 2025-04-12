@@ -1,8 +1,10 @@
+
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import ProductForm, { ProductImage, FormValues } from '@/components/hyper-persona/ProductForm';
 import PersonaCard from '@/components/hyper-persona/PersonaCard';
 import EmptyState from '@/components/hyper-persona/EmptyState';
+import GroqApiKeyInput from '@/components/hyper-persona/GroqApiKeyInput';
 import { generatePersonas, Persona } from '@/services/personaService';
 import { Zap, LineChart, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -66,6 +68,11 @@ const HyperPersona = () => {
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Transform your product description into detailed customer personas with AI-powered insights
           </p>
+          
+          {/* Groq API Key Input */}
+          <div className="mt-6 flex justify-center">
+            <GroqApiKeyInput />
+          </div>
         </div>
 
         {/* Why Synthetic User Research Section */}
