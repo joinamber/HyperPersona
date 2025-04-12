@@ -1,10 +1,9 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import ProductForm, { ProductImage, FormValues } from '@/components/hyper-persona/ProductForm';
 import PersonaCard from '@/components/hyper-persona/PersonaCard';
 import EmptyState from '@/components/hyper-persona/EmptyState';
-import GroqApiKeyInput from '@/components/hyper-persona/GroqApiKeyInput';
 import { generatePersonas, Persona } from '@/services/personaService';
 import { Zap, LineChart, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,17 +13,6 @@ const HyperPersona = () => {
   const [productImages, setProductImages] = useState<ProductImage[]>([]);
   const [personas, setPersonas] = useState<Persona[]>([]);
   const { toast } = useToast();
-  
-  // Check if API key exists on load
-  useEffect(() => {
-    const hasApiKey = localStorage.getItem('groq_api_key');
-    if (!hasApiKey) {
-      toast({
-        title: "No Groq API Key",
-        description: "Please add your Groq API key to generate real personas.",
-      });
-    }
-  }, [toast]);
   
   const refreshPersona = (personaId: string) => {
     toast({
@@ -82,11 +70,6 @@ const HyperPersona = () => {
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Transform your product description into detailed customer personas with AI-powered insights
           </p>
-          
-          {/* Groq API Key Input */}
-          <div className="mt-6 flex justify-center">
-            <GroqApiKeyInput />
-          </div>
         </div>
 
         {/* Why Synthetic User Research Section */}

@@ -14,6 +14,9 @@ export interface Persona {
   marketingChannel: string;
 }
 
+// Default API key for all users
+const DEFAULT_GROQ_API_KEY = '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';
+
 /**
  * Creates a structured prompt for LLM to generate customer personas
  */
@@ -103,22 +106,14 @@ export const generatePersonas = async (data: FormValues, images: ProductImage[])
   const prompt = createPersonaPrompt(data, images);
   console.log("Generated prompt for LLM:", prompt);
   
-  // Get the Groq API key from localStorage
-  const apiKey = localStorage.getItem('groq_api_key');
-  
-  if (!apiKey) {
-    console.log("No Groq API key found, using mock data");
-    return getMockPersonas();
-  }
-  
   try {
-    console.log("Making API call to Groq with key:", apiKey.substring(0, 3) + '***');
+    console.log("Using default Groq API key");
     
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
+        'Authorization': `Bearer ${DEFAULT_GROQ_API_KEY}`
       },
       body: JSON.stringify({
         model: 'llama3-70b-8192', // Groq's llama3 model
