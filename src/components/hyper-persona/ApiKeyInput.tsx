@@ -36,19 +36,19 @@ const ApiKeyInput: React.FC = () => {
   };
 
   return (
-    <div className="mb-4">
+    <div className="mb-6">
       {!isVisible ? (
         <Button 
           variant="outline" 
           size="sm" 
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 text-indigo-600 border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
           onClick={() => setIsVisible(true)}
         >
           <Key className="h-4 w-4" />
           {apiKey ? "Change API Key" : "Add OpenAI API Key"}
         </Button>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           <div className="flex items-center gap-2">
             <Input
               type="password"
@@ -57,10 +57,21 @@ const ApiKeyInput: React.FC = () => {
               placeholder="Enter your OpenAI API key"
               className="flex-1"
             />
-            <Button onClick={handleSaveKey}>Save</Button>
-            <Button variant="ghost" onClick={() => setIsVisible(false)}>Cancel</Button>
+            <Button 
+              onClick={handleSaveKey}
+              className="bg-indigo-600 hover:bg-indigo-700"
+            >
+              Save
+            </Button>
+            <Button 
+              variant="ghost" 
+              onClick={() => setIsVisible(false)}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              Cancel
+            </Button>
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-gray-500">
             Your API key is stored locally in your browser and never sent to our servers.
           </p>
         </div>
