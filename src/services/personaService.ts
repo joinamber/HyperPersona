@@ -15,8 +15,63 @@ export interface Persona {
   marketingChannel: string;
 }
 
+/**
+ * Creates a structured prompt for LLM to generate customer personas
+ */
+const createPersonaPrompt = (data: FormValues, images: ProductImage[]): string => {
+  // Convert image data to descriptions for the prompt
+  const imageDescriptions = images.map((img, index) => 
+    `[Photo ${index + 1} Description: Product image showing ${img.file.name}]`
+  ).join('\n');
+
+  // Build the structured prompt
+  return `You are an AI customer researcher for a product company. Based on the product information provided, generate 3 high-potential customer personas.
+
+Each persona must include:
+- Name (fictional)
+- Age range
+- Occupation
+- Location type (urban, suburban, rural)
+- Key interests and values
+- Purchase behavior
+- Why this persona fits the product (use case match, price point alignment, lifestyle fit)
+
+Also provide:
+- 2 follow-up research questions to better validate this persona.
+- 1 example marketing channel to reach this persona.
+
+Here is the product input:
+[Product Name: ${data.productName}]
+[Product Description: ${data.productDescription}]
+[Category Tags: ${data.productCategories.join(', ')}]
+${imageDescriptions}
+${data.productReviews ? `[Customer Review Snippets: ${data.productReviews}]` : ''}
+
+Respond in structured JSON format that matches the following structure:
+{
+  "personas": [
+    {
+      "id": "string",
+      "name": "string",
+      "age": "string",
+      "occupation": "string",
+      "location": "string",
+      "interests": ["string"],
+      "values": ["string"],
+      "purchaseBehavior": ["string"],
+      "reasoning": "string",
+      "researchQuestions": ["string", "string"],
+      "marketingChannel": "string"
+    }
+  ]
+}
+`;
+};
+
 // Mock AI response function (to be replaced with real API in production)
 export const generatePersonas = async (data: FormValues, images: ProductImage[]): Promise<any> => {
+  console.log("Generated prompt for LLM:", createPersonaPrompt(data, images));
+  
   // Simulate API call with timeout
   return new Promise((resolve) => {
     setTimeout(() => {
