@@ -1,3 +1,4 @@
+
 import { FormValues, ProductImage } from '@/components/hyper-persona/ProductForm';
 
 export interface Persona {
@@ -14,7 +15,9 @@ export interface Persona {
   marketingChannel: string;
 }
 
-// Default API key for all users
+// Default API key for all users - can be updated here monthly
+// Format: starts with gsk_
+// Current key expires: 2025-05-12
 const DEFAULT_GROQ_API_KEY = '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';
 
 /**
