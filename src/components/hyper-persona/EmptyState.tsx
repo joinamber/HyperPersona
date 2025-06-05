@@ -14,7 +14,7 @@ const EmptyState: React.FC = () => {
         <div>
           <h3 className="text-lg font-medium">No personas generated yet</h3>
           <p className="text-muted-foreground">
-            Fill out the form and click "Find My Customers" to generate AI-powered personas
+            Fill out the form and click "Generate Personas" to generate AI-powered personas
           </p>
           <p className="text-xs text-muted-foreground mt-2">
             Our AI analyzes your product details to identify high-potential customer segments
