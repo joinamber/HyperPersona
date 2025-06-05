@@ -1,5 +1,6 @@
 
-import { FormValues, ProductImage } from '@/components/hyper-persona/ProductForm';
+import { FormValues } from '@/components/hyper-persona/ProductForm';
+import { ProductImage } from '@/components/hyper-persona/ImageUploader';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface Persona {
