@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -39,26 +40,36 @@ interface ProductFormProps {
   isGenerating: boolean;
   productImages: ProductImage[];
   setProductImages: (images: ProductImage[]) => void;
+  initialValues?: FormValues;
 }
 
 const ProductForm: React.FC<ProductFormProps> = ({ 
   onSubmit, 
   isGenerating, 
   productImages, 
-  setProductImages 
+  setProductImages,
+  initialValues 
 }) => {
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(initialValues?.productCategories || []);
 
   // Initialize react-hook-form
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      productName: "",
-      productDescription: "",
-      productCategories: [],
-      productReviews: "",
+      productName: initialValues?.productName || "",
+      productDescription: initialValues?.productDescription || "",
+      productCategories: initialValues?.productCategories || [],
+      productReviews: initialValues?.productReviews || "",
     },
   });
+
+  // Update form when initialValues change (after authentication)
+  useEffect(() => {
+    if (initialValues) {
+      form.reset(initialValues);
+      setSelectedCategories(initialValues.productCategories || []);
+    }
+  }, [initialValues, form]);
 
   // Watch the product description to get real-time character count
   const productDescription = form.watch("productDescription");

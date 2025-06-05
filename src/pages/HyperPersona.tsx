@@ -17,6 +17,7 @@ const HyperPersona = () => {
   const [productImages, setProductImages] = useState<ProductImage[]>([]);
   const [personas, setPersonas] = useState<Persona[]>([]);
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [currentFormData, setCurrentFormData] = useState<FormValues | undefined>(undefined);
   const { toast } = useToast();
   const { user, loading, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
@@ -31,6 +32,10 @@ const HyperPersona = () => {
         try {
           const formData = JSON.parse(pendingFormData);
           const images = pendingImages ? JSON.parse(pendingImages) : [];
+          
+          // Set the form data to maintain the form state
+          setCurrentFormData(formData);
+          setProductImages(images);
           
           // Clear the stored data
           localStorage.removeItem('pendingFormData');
@@ -94,6 +99,9 @@ const HyperPersona = () => {
   };
 
   const onSubmit = async (data: FormValues) => {
+    // Store the current form data to maintain state
+    setCurrentFormData(data);
+    
     // Check if user is authenticated, if not, store data and sign in
     if (!user) {
       try {
@@ -205,7 +213,8 @@ const HyperPersona = () => {
             onSubmit={onSubmit} 
             isGenerating={isGenerating} 
             productImages={productImages} 
-            setProductImages={setProductImages} 
+            setProductImages={setProductImages}
+            initialValues={currentFormData}
           />
 
           {/* Results Section */}
