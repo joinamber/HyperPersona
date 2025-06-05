@@ -1,216 +1,209 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Content-Security-Policy': "default-src 'self'; script-src 'none'; object-src 'none';",
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'X-XSS-Protection': '1; mode=block'
 };
 
-interface FormValues {
-  productName: string;
-  productDescription: string;
-  productCategories: string[];
-  productReviews?: string;
-}
-
-interface ProductImage {
-  file: {
-    name: string;
-  };
-}
-
-interface Persona {
-  id: string;
-  name: string;
-  age: string;
-  occupation: string;
-  location: string;
-  interests: string[];
-  values: string[];
-  purchaseBehavior: string[];
-  reasoning: string;
-  researchQuestions: string[];
-  marketingChannel: string;
-}
-
-const createPersonaPrompt = (data: FormValues, images: ProductImage[]): string => {
-  const imageDescriptions = images.map((img, index) => 
-    `[Photo ${index + 1} Description: Product image showing ${img.file.name}]`
-  ).join('\n');
-
-  return `You are an AI customer researcher for a product company. Based on the product information provided, generate 3 high-potential customer personas.
-
-Each persona must include:
-- Name (fictional)
-- Age range
-- Occupation
-- Location type (urban, suburban, rural)
-- Key interests and values
-- Purchase behavior
-- Why this persona fits the product (use case match, price point alignment, lifestyle fit)
-
-Also provide:
-- 2 follow-up research questions to better validate this persona.
-- 1 example marketing channel to reach this persona.
-
-Here is the product input:
-[Product Name: ${data.productName}]
-[Product Description: ${data.productDescription}]
-[Category Tags: ${data.productCategories.join(', ')}]
-${imageDescriptions}
-${data.productReviews ? `[Customer Review Snippets: ${data.productReviews}]` : ''}
-
-I need you to respond with only the JSON data in this exact format:
-{
-  "personas": [
-    {
-      "id": "string",
-      "name": "string",
-      "age": "string",
-      "occupation": "string",
-      "location": "string",
-      "interests": ["string"],
-      "values": ["string"],
-      "purchaseBehavior": ["string"],
-      "reasoning": "string",
-      "researchQuestions": ["string", "string"],
-      "marketingChannel": "string"
-    }
-  ]
-}
-
-Only return JSON, do not include markdown formatting such as \`\`\`json or any other explanation text.`;
-};
-
-const extractJSONFromResponse = (text: string): any => {
-  try {
-    return JSON.parse(text);
-  } catch (error) {
-    console.log("Failed to parse entire response as JSON, attempting to extract JSON portion", error);
-    
-    try {
-      const jsonMatch = text.match(/{[\s\S]*}/);
-      if (jsonMatch) {
-        const jsonStr = jsonMatch[0];
-        console.log("Extracted JSON string:", jsonStr);
-        return JSON.parse(jsonStr);
-      } else {
-        throw new Error("No JSON object found in response");
-      }
-    } catch (extractError) {
-      console.error("Failed to extract JSON:", extractError);
-      throw new Error("Failed to extract valid JSON from LLM response");
-    }
+// Input validation helper functions
+function validateString(value: any, maxLength: number = 1000): string {
+  if (typeof value !== 'string') {
+    throw new Error('Invalid input: expected string');
   }
-};
+  if (value.length > maxLength) {
+    throw new Error(`Input too long: maximum ${maxLength} characters allowed`);
+  }
+  // Remove potentially dangerous characters
+  return value.replace(/[<>\"'&]/g, '');
+}
 
-const getMockPersonas = () => {
-  return {
-    personas: [
-      {
-        id: "p1",
-        name: "Sarah Thompson",
-        age: "28-35",
-        occupation: "Marketing Manager",
-        location: "Urban",
-        interests: ["Fitness", "Technology", "Fashion"],
-        values: ["Quality", "Efficiency", "Status"],
-        purchaseBehavior: [
-          "Researches extensively before purchase",
-          "Willing to pay premium for quality",
-          "Brand loyal when satisfied"
-        ],
-        reasoning: "Based on the product description, Sarah represents professionals who value efficiency and quality. The product's features align with her need for reliable solutions.",
-        researchQuestions: [
-          "What factors most influence your purchasing decisions for work-related tools?",
-          "How important is brand reputation compared to product features?"
-        ],
-        marketingChannel: "LinkedIn + Instagram (sponsored posts)"
-      },
-      {
-        id: "p2",
-        name: "Michael Chen",
-        age: "35-42",
-        occupation: "Small Business Owner",
-        location: "Suburban",
-        interests: ["Entrepreneurship", "Home Improvement", "Local Community"],
-        values: ["Practicality", "Value for Money", "Support"],
-        purchaseBehavior: [
-          "Price-conscious but values durability",
-          "Reads reviews extensively",
-          "Prefers products with good customer service"
-        ],
-        reasoning: "Michael represents the practical business owner segment who needs reliable solutions that provide clear ROI. The product's emphasis on efficiency would appeal to him.",
-        researchQuestions: [
-          "What level of customer support do you expect when purchasing business solutions?",
-          "How do you balance cost vs. features when making business purchases?"
-        ],
-        marketingChannel: "Facebook Business Groups + Local Business Events"
-      },
-      {
-        id: "p3",
-        name: "Emma Rodriguez",
-        age: "22-29",
-        occupation: "Freelance Designer",
-        location: "Urban",
-        interests: ["Design", "Coffee Culture", "Digital Nomad Lifestyle"],
-        values: ["Creativity", "Flexibility", "Aesthetic"],
-        purchaseBehavior: [
-          "Early adopter of new tools",
-          "Influenced by peers and social media",
-          "Values portability and design"
-        ],
-        reasoning: "Emma represents creative professionals who need flexible solutions. The product's innovative aspects and ease of use would appeal to her workflow needs.",
-        researchQuestions: [
-          "How important is the visual design of products you use professionally?",
-          "Do you prefer products that integrate with your existing workflow tools?"
-        ],
-        marketingChannel: "Instagram + Design Community Forums"
-      }
-    ]
+function validateFormData(data: any) {
+  if (!data || typeof data !== 'object') {
+    throw new Error('Invalid form data');
+  }
+
+  const validated = {
+    productName: validateString(data.productName, 100),
+    productDescription: validateString(data.productDescription, 2000),
+    targetAudience: validateString(data.targetAudience, 500),
+    keyFeatures: validateString(data.keyFeatures, 1000),
+    category: validateString(data.category, 50),
+    priceRange: validateString(data.priceRange, 50),
+    businessGoals: validateString(data.businessGoals, 1000)
   };
-};
+
+  // Validate required fields
+  if (!validated.productName || !validated.productDescription) {
+    throw new Error('Product name and description are required');
+  }
+
+  return validated;
+}
+
+function validateImages(images: any[]) {
+  if (!Array.isArray(images)) {
+    return [];
+  }
+  
+  // Limit number of images
+  if (images.length > 5) {
+    throw new Error('Maximum 5 images allowed');
+  }
+
+  return images.slice(0, 5).map(img => {
+    if (typeof img !== 'object' || !img.url) {
+      throw new Error('Invalid image format');
+    }
+    return {
+      url: validateString(img.url, 500),
+      name: validateString(img.name || '', 100)
+    };
+  });
+}
+
+// Rate limiting helper (simple in-memory store)
+const rateLimitStore = new Map<string, { count: number; lastReset: number }>();
+const RATE_LIMIT_WINDOW = 60000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 10; // 10 requests per minute per user
+
+function checkRateLimit(userId: string): boolean {
+  const now = Date.now();
+  const userLimit = rateLimitStore.get(userId);
+  
+  if (!userLimit || now - userLimit.lastReset > RATE_LIMIT_WINDOW) {
+    rateLimitStore.set(userId, { count: 1, lastReset: now });
+    return true;
+  }
+  
+  if (userLimit.count >= RATE_LIMIT_MAX_REQUESTS) {
+    return false;
+  }
+  
+  userLimit.count++;
+  return true;
+}
+
+// Sanitize AI output to prevent XSS
+function sanitizeOutput(text: string): string {
+  return text
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;');
+}
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { data, images } = await req.json();
-    
-    if (!data) {
-      throw new Error('No form data provided');
+    // Verify authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('Missing authorization header');
     }
 
-    console.log("Generating personas with data:", data);
-    
-    // Try to get the Groq API key from the correct secret name
-    const groqApiKey = Deno.env.get('GROQ_API_KEY') || Deno.env.get('groq-api');
-    
-    if (!groqApiKey) {
-      console.log('No Groq API key found (checked both GROQ_API_KEY and groq-api), falling back to mock data');
-      return new Response(JSON.stringify(getMockPersonas()), {
+    // Initialize Supabase client to verify the JWT
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: { Authorization: authHeader },
+      },
+    });
+
+    // Get the authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      console.error('Authentication error:', authError);
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    console.log('Groq API key found, calling Groq API...');
+    // Rate limiting check
+    if (!checkRateLimit(user.id)) {
+      return new Response(JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }), {
+        status: 429,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
-    const prompt = createPersonaPrompt(data, images || []);
-    console.log("Generated prompt for LLM:", prompt);
+    // Parse and validate request body
+    let requestBody;
+    try {
+      requestBody = await req.json();
+    } catch (e) {
+      throw new Error('Invalid JSON in request body');
+    }
+
+    const { data, images = [] } = requestBody;
     
+    // Validate input data
+    const validatedData = validateFormData(data);
+    const validatedImages = validateImages(images);
+
+    console.log('Generating personas for user:', user.id);
+    console.log('Validated product data:', validatedData.productName);
+
+    // Get Groq API key from secrets
+    const groqApiKey = Deno.env.get('groq-api');
+    if (!groqApiKey) {
+      throw new Error('Groq API key not configured');
+    }
+
+    // Prepare the prompt for persona generation
+    const prompt = `Based on the following product information, generate 3-4 detailed customer personas in JSON format:
+
+Product: ${validatedData.productName}
+Description: ${validatedData.productDescription}
+Target Audience: ${validatedData.targetAudience}
+Key Features: ${validatedData.keyFeatures}
+Category: ${validatedData.category}
+Price Range: ${validatedData.priceRange}
+Business Goals: ${validatedData.businessGoals}
+
+Generate personas as a JSON object with a "personas" array. Each persona should include:
+- id (unique string)
+- name (realistic full name)
+- age (age range like "25-35")
+- occupation
+- location (city/region)
+- interests (array of 3-5 interests)
+- values (array of 3-4 core values)
+- purchaseBehavior (array of 3-4 buying patterns)
+- reasoning (why this persona would be interested in the product)
+- researchQuestions (array of 3-4 questions to validate this persona)
+- marketingChannel (best channel to reach this persona)
+
+Focus on diversity in demographics, psychographics, and behavior patterns. Make personas realistic and actionable for marketing purposes.`;
+
+    // Call Groq API with security headers
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${groqApiKey}`,
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${groqApiKey}`
+        'User-Agent': 'HyperPersona/1.0',
       },
       body: JSON.stringify({
-        model: 'llama3-70b-8192',
+        model: 'llama3-8b-8192',
         messages: [
+          {
+            role: 'system',
+            content: 'You are a marketing research expert. Generate customer personas in valid JSON format only. Do not include any text outside the JSON response.'
+          },
           {
             role: 'user',
             content: prompt
@@ -218,59 +211,67 @@ serve(async (req) => {
         ],
         temperature: 0.7,
         max_tokens: 2000,
-        top_p: 1.0,
-      })
+      }),
     });
-
-    console.log('Groq API response status:', response.status);
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Groq API Error:', errorText);
-      console.log('Falling back to mock data due to API error');
-      return new Response(JSON.stringify(getMockPersonas()), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      console.error('Groq API error:', response.status, errorText);
+      throw new Error('Failed to generate personas');
     }
-    
-    const responseData = await response.json();
-    console.log("Groq API full response:", responseData);
 
-    const content = responseData.choices[0].message.content;
-    console.log("Raw content from API:", content);
-    
-    try {
-      const parsedResponse = extractJSONFromResponse(content);
-      console.log("Successfully parsed response:", parsedResponse);
-      
-      if (!parsedResponse.personas || !Array.isArray(parsedResponse.personas)) {
-        console.error("Invalid response structure:", parsedResponse);
-        throw new Error("Response doesn't contain the expected personas array");
-      }
-      
-      // Ensure all personas have IDs
-      parsedResponse.personas = parsedResponse.personas.map((persona: any, index: number) => {
-        if (!persona.id) {
-          persona.id = `persona-${index + 1}`;
-        }
-        return persona;
-      });
-      
-      console.log("Successfully generated personas via Groq API");
-      return new Response(JSON.stringify(parsedResponse), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    } catch (parseError) {
-      console.error('Error parsing LLM response:', parseError);
-      console.log('Falling back to mock data due to parse error');
-      return new Response(JSON.stringify(getMockPersonas()), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    const aiResponse = await response.json();
+    const generatedContent = aiResponse.choices[0]?.message?.content;
+
+    if (!generatedContent) {
+      throw new Error('No content generated from AI');
     }
+
+    // Parse and validate the AI response
+    let personas;
+    try {
+      const parsedResponse = JSON.parse(generatedContent);
+      personas = parsedResponse.personas || [];
+    } catch (e) {
+      console.error('Failed to parse AI response as JSON:', e);
+      throw new Error('Invalid response format from AI');
+    }
+
+    // Sanitize AI output to prevent XSS
+    const sanitizedPersonas = personas.map((persona: any) => ({
+      ...persona,
+      name: sanitizeOutput(persona.name || ''),
+      occupation: sanitizeOutput(persona.occupation || ''),
+      location: sanitizeOutput(persona.location || ''),
+      reasoning: sanitizeOutput(persona.reasoning || ''),
+      marketingChannel: sanitizeOutput(persona.marketingChannel || ''),
+      interests: Array.isArray(persona.interests) ? persona.interests.map((i: string) => sanitizeOutput(i)) : [],
+      values: Array.isArray(persona.values) ? persona.values.map((v: string) => sanitizeOutput(v)) : [],
+      purchaseBehavior: Array.isArray(persona.purchaseBehavior) ? persona.purchaseBehavior.map((p: string) => sanitizeOutput(p)) : [],
+      researchQuestions: Array.isArray(persona.researchQuestions) ? persona.researchQuestions.map((q: string) => sanitizeOutput(q)) : []
+    }));
+
+    console.log(`Generated ${sanitizedPersonas.length} personas for user ${user.id}`);
+
+    return new Response(JSON.stringify({ personas: sanitizedPersonas }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+
   } catch (error) {
     console.error('Error in generate-personas function:', error);
-    console.log('Falling back to mock data due to function error');
-    return new Response(JSON.stringify(getMockPersonas()), {
+    
+    // Return generic error message to avoid information disclosure
+    const errorMessage = error.message.includes('Rate limit') || 
+                        error.message.includes('Unauthorized') ||
+                        error.message.includes('Invalid') ||
+                        error.message.includes('too long') ||
+                        error.message.includes('required')
+      ? error.message 
+      : 'An error occurred while generating personas';
+
+    return new Response(JSON.stringify({ error: errorMessage }), {
+      status: error.message.includes('Unauthorized') ? 401 : 
+              error.message.includes('Rate limit') ? 429 : 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
