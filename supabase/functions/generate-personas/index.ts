@@ -187,14 +187,17 @@ serve(async (req) => {
 
     console.log("Generating personas with data:", data);
     
-    const groqApiKey = Deno.env.get('GROQ_API_KEY');
+    // Try to get the Groq API key from the correct secret name
+    const groqApiKey = Deno.env.get('GROQ_API_KEY') || Deno.env.get('groq-api');
     
     if (!groqApiKey) {
-      console.log('No Groq API key found, falling back to mock data');
+      console.log('No Groq API key found (checked both GROQ_API_KEY and groq-api), falling back to mock data');
       return new Response(JSON.stringify(getMockPersonas()), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    console.log('Groq API key found, calling Groq API...');
 
     const prompt = createPersonaPrompt(data, images || []);
     console.log("Generated prompt for LLM:", prompt);
@@ -218,6 +221,8 @@ serve(async (req) => {
         top_p: 1.0,
       })
     });
+
+    console.log('Groq API response status:', response.status);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -243,6 +248,7 @@ serve(async (req) => {
         throw new Error("Response doesn't contain the expected personas array");
       }
       
+      // Ensure all personas have IDs
       parsedResponse.personas = parsedResponse.personas.map((persona: any, index: number) => {
         if (!persona.id) {
           persona.id = `persona-${index + 1}`;
@@ -250,6 +256,7 @@ serve(async (req) => {
         return persona;
       });
       
+      console.log("Successfully generated personas via Groq API");
       return new Response(JSON.stringify(parsedResponse), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
