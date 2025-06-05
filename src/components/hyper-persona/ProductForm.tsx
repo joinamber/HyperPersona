@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -96,6 +95,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   setProductImages 
 }) => {
   const [uploading, setUploading] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   // Initialize react-hook-form
   const form = useForm<FormValues>({
@@ -110,7 +110,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
   // Handle form submission
   const handleSubmit = (values: FormValues) => {
-    onSubmit(values);
+    const formData = { ...values, productCategories: selectedCategories };
+    onSubmit(formData);
   };
 
   // Handle image upload
@@ -149,15 +150,20 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
   // Handle category tag selection
   const handleCategoryToggle = (category: string) => {
-    const currentCategories = form.getValues().productCategories;
-    
-    if (currentCategories.includes(category)) {
-      // Remove category
-      form.setValue("productCategories", currentCategories.filter(cat => cat !== category));
-    } else if (currentCategories.length < 5) {
-      // Add category (only if under limit)
-      form.setValue("productCategories", [...currentCategories, category]);
-    }
+    setSelectedCategories(prev => {
+      if (prev.includes(category)) {
+        // Remove category
+        const newCategories = prev.filter(cat => cat !== category);
+        form.setValue("productCategories", newCategories);
+        return newCategories;
+      } else if (prev.length < 5) {
+        // Add category (only if under limit)
+        const newCategories = [...prev, category];
+        form.setValue("productCategories", newCategories);
+        return newCategories;
+      }
+      return prev;
+    });
   };
 
   return (
@@ -207,9 +213,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
           
           {/* Selected Tags Display */}
           <div className="mb-4 min-h-[40px] p-3 border border-gray-200 rounded-md bg-gray-50">
-            {form.getValues().productCategories.length > 0 ? (
+            {selectedCategories.length > 0 ? (
               <div className="flex flex-wrap gap-2">
-                {form.getValues().productCategories.map((category) => (
+                {selectedCategories.map((category) => (
                   <Badge key={category} className="bg-indigo-100 text-indigo-700 rounded-full px-3 py-1 text-sm font-medium flex items-center gap-1">
                     {category}
                     <button type="button" onClick={() => handleCategoryToggle(category)}>
@@ -227,8 +233,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
           <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-md p-3 bg-white">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
               {CATEGORY_TAGS.map((category) => {
-                const isSelected = form.getValues().productCategories.includes(category);
-                const isDisabled = !isSelected && form.getValues().productCategories.length >= 5;
+                const isSelected = selectedCategories.includes(category);
+                const isDisabled = !isSelected && selectedCategories.length >= 5;
                 
                 return (
                   <button
@@ -241,7 +247,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                         ? 'bg-indigo-100 border-indigo-300 text-indigo-700'
                         : isDisabled
                         ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
-                        : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                        : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 cursor-pointer'
                     }`}
                   >
                     {category}
@@ -252,7 +258,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
           </div>
           
           <p className="text-xs text-gray-500 mt-2">
-            Selected: {form.getValues().productCategories.length}/5 categories
+            Selected: {selectedCategories.length}/5 categories
           </p>
           
           {form.formState.errors.productCategories && (
