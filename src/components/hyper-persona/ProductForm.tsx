@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -70,6 +69,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const handleSubmit = (values: FormValues) => {
     const formData = { ...values, productCategories: selectedCategories };
     onSubmit(formData);
+    // Removed form.reset() to keep the form data after submission
   };
 
   // Handle category tag selection
