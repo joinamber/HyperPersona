@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -23,8 +22,8 @@ function validateString(value: any, maxLength: number = 1000): string {
   if (value.length > maxLength) {
     return value.slice(0, maxLength);
   }
-  // Remove potentially dangerous characters
-  return value.replace(/[<>\"'&]/g, '');
+  // Remove potentially dangerous characters but keep normal punctuation
+  return value.replace(/[<>]/g, '');
 }
 
 function validateArray(value: any): string[] {
@@ -101,15 +100,17 @@ function checkRateLimit(userId: string): boolean {
   return true;
 }
 
-// Sanitize AI output to prevent XSS
-function sanitizeOutput(text: string): string {
+// Improved sanitize function that preserves normal text but removes dangerous content
+function sanitizeText(text: string): string {
   if (!text) return '';
+  
+  // Only sanitize actual dangerous content, preserve normal punctuation
   return text
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
-    .replace(/\//g, '&#x2F;');
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
+    .replace(/<[^>]*>/g, '') // Remove HTML tags
+    .replace(/javascript:/gi, '') // Remove javascript: protocol
+    .replace(/on\w+=/gi, '') // Remove event handlers
+    .trim();
 }
 
 // Helper function to extract JSON from AI response
@@ -225,7 +226,7 @@ Return ONLY a JSON object with this exact structure:
   ]
 }
 
-Generate diverse personas with realistic details. Return ONLY valid JSON, no additional text.`;
+Generate diverse personas with realistic details. Return ONLY valid JSON, no additional text or formatting.`;
 
     // Call Groq API with security headers
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -240,7 +241,7 @@ Generate diverse personas with realistic details. Return ONLY valid JSON, no add
         messages: [
           {
             role: 'system',
-            content: 'You are a marketing research expert. Generate customer personas in valid JSON format only. Do not include any text outside the JSON response. Always start your response with { and end with }.'
+            content: 'You are a marketing research expert. Generate customer personas in valid JSON format only. Do not include any text outside the JSON response. Always start your response with { and end with }. Use proper quotes and avoid special characters that could break JSON parsing.'
           },
           {
             role: 'user',
@@ -289,19 +290,19 @@ Generate diverse personas with realistic details. Return ONLY valid JSON, no add
       throw new Error('Invalid response format from AI');
     }
 
-    // Sanitize AI output to prevent XSS
+    // Apply minimal sanitization that preserves normal text
     const sanitizedPersonas = personas.map((persona: any, index: number) => ({
       id: persona.id || `persona-${Date.now()}-${index}`,
-      name: sanitizeOutput(persona.name || 'Unknown'),
-      age: sanitizeOutput(persona.age || '25-35'),
-      occupation: sanitizeOutput(persona.occupation || 'Professional'),
-      location: sanitizeOutput(persona.location || 'Unknown'),
-      reasoning: sanitizeOutput(persona.reasoning || 'Potential customer'),
-      marketingChannel: sanitizeOutput(persona.marketingChannel || 'Digital'),
-      interests: Array.isArray(persona.interests) ? persona.interests.map((i: string) => sanitizeOutput(i)).filter(Boolean) : [],
-      values: Array.isArray(persona.values) ? persona.values.map((v: string) => sanitizeOutput(v)).filter(Boolean) : [],
-      purchaseBehavior: Array.isArray(persona.purchaseBehavior) ? persona.purchaseBehavior.map((p: string) => sanitizeOutput(p)).filter(Boolean) : [],
-      researchQuestions: Array.isArray(persona.researchQuestions) ? persona.researchQuestions.map((q: string) => sanitizeOutput(q)).filter(Boolean) : []
+      name: sanitizeText(persona.name || 'Unknown'),
+      age: sanitizeText(persona.age || '25-35'),
+      occupation: sanitizeText(persona.occupation || 'Professional'),
+      location: sanitizeText(persona.location || 'Unknown'),
+      reasoning: sanitizeText(persona.reasoning || 'Potential customer'),
+      marketingChannel: sanitizeText(persona.marketingChannel || 'Digital'),
+      interests: Array.isArray(persona.interests) ? persona.interests.map((i: string) => sanitizeText(i)).filter(Boolean) : [],
+      values: Array.isArray(persona.values) ? persona.values.map((v: string) => sanitizeText(v)).filter(Boolean) : [],
+      purchaseBehavior: Array.isArray(persona.purchaseBehavior) ? persona.purchaseBehavior.map((p: string) => sanitizeText(p)).filter(Boolean) : [],
+      researchQuestions: Array.isArray(persona.researchQuestions) ? persona.researchQuestions.map((q: string) => sanitizeText(q)).filter(Boolean) : []
     }));
 
     console.log(`Generated ${sanitizedPersonas.length} personas for user ${user.id}`);
