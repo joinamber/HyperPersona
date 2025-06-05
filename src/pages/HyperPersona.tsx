@@ -271,7 +271,7 @@ const HyperPersona = () => {
             </div>
           </div>
         </div>
-      </div>
+      </footer>
     </div>
   );
 };
