@@ -16,6 +16,7 @@ const HyperPersona = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [productImages, setProductImages] = useState<ProductImage[]>([]);
   const [personas, setPersonas] = useState<Persona[]>([]);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
   const { toast } = useToast();
   const { user, loading, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
@@ -48,6 +49,7 @@ const HyperPersona = () => {
 
   const handlePersonaGeneration = async (data: FormValues, images: ProductImage[]) => {
     setIsGenerating(true);
+    setHasSubmitted(true);
     try {
       console.log("Submitting form data to generate personas");
       const response = await generatePersonas(data, images);
@@ -55,7 +57,7 @@ const HyperPersona = () => {
       setPersonas(response.personas);
       toast({
         title: "Personas generated successfully!",
-        description: "View your customer personas below.",
+        description: `Generated ${response.personas.length} customer personas for your product.`,
       });
     } catch (error) {
       console.error("Error in persona generation:", error);
@@ -64,6 +66,7 @@ const HyperPersona = () => {
         description: "Please try again or contact support.",
         variant: "destructive",
       });
+      setPersonas([]); // Clear personas on error
     } finally {
       setIsGenerating(false);
     }
@@ -137,6 +140,10 @@ const HyperPersona = () => {
     );
   }
 
+  // Determine what to show in the results section
+  const showPersonas = user && personas.length > 0;
+  const showEmptyState = !hasSubmitted || (!showPersonas && !isGenerating);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-indigo-50">
       <div className="container mx-auto px-4 py-12 max-w-7xl">
@@ -203,9 +210,20 @@ const HyperPersona = () => {
 
           {/* Results Section */}
           <div className="space-y-8">
-            {user && personas.length > 0 ? (
+            {isGenerating && (
+              <div className="bg-white rounded-lg shadow-lg p-8 text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                <h2 className="text-2xl font-bold text-indigo-600 mb-2">Generating Your Personas</h2>
+                <p className="text-gray-600">Our AI is analyzing your product and creating detailed customer personas...</p>
+              </div>
+            )}
+            
+            {showPersonas && (
               <>
-                <h2 className="text-2xl font-bold text-indigo-600">Your Customer Personas</h2>
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                  <h2 className="text-2xl font-bold text-indigo-600 mb-2">Your Customer Personas</h2>
+                  <p className="text-gray-600">Here are the detailed customer personas generated for your product:</p>
+                </div>
                 {personas.map((persona) => (
                   <PersonaCard 
                     key={persona.id} 
@@ -216,7 +234,9 @@ const HyperPersona = () => {
                   />
                 ))}
               </>
-            ) : (
+            )}
+            
+            {showEmptyState && (
               <EmptyState />
             )}
           </div>
@@ -251,7 +271,7 @@ const HyperPersona = () => {
             </div>
           </div>
         </div>
-      </footer>
+      </div>
     </div>
   );
 };
