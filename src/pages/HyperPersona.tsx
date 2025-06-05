@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -16,7 +17,6 @@ const HyperPersona = () => {
   const [productImages, setProductImages] = useState<ProductImage[]>([]);
   const [personas, setPersonas] = useState<Persona[]>([]);
   const [hasSubmitted, setHasSubmitted] = useState(false);
-  const [submittedFormData, setSubmittedFormData] = useState<FormValues | null>(null);
   const { toast } = useToast();
   const { user, loading, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
@@ -50,7 +50,6 @@ const HyperPersona = () => {
   const handlePersonaGeneration = async (data: FormValues, images: ProductImage[]) => {
     setIsGenerating(true);
     setHasSubmitted(true);
-    setSubmittedFormData(data); // Store the submitted form data
     try {
       console.log("Submitting form data to generate personas");
       const response = await generatePersonas(data, images);
@@ -202,62 +201,12 @@ const HyperPersona = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
           {/* Input Form */}
-          <div className="space-y-6">
-            <ProductForm 
-              onSubmit={onSubmit} 
-              isGenerating={isGenerating} 
-              productImages={productImages} 
-              setProductImages={setProductImages} 
-            />
-            
-            {/* Display submitted form details */}
-            {submittedFormData && (
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h3 className="text-xl font-bold text-indigo-600 mb-4">Submitted Product Details</h3>
-                <div className="space-y-3">
-                  <div>
-                    <span className="font-medium text-gray-700">Product Name: </span>
-                    <span className="text-gray-900">{submittedFormData.productName}</span>
-                  </div>
-                  <div>
-                    <span className="font-medium text-gray-700">Description: </span>
-                    <p className="text-gray-900 mt-1">{submittedFormData.productDescription}</p>
-                  </div>
-                  <div>
-                    <span className="font-medium text-gray-700">Categories: </span>
-                    <div className="flex flex-wrap gap-2 mt-1">
-                      {submittedFormData.productCategories.map((category, index) => (
-                        <span key={index} className="bg-indigo-100 text-indigo-800 text-sm px-2 py-1 rounded">
-                          {category}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  {submittedFormData.productReviews && (
-                    <div>
-                      <span className="font-medium text-gray-700">Customer Reviews: </span>
-                      <p className="text-gray-900 mt-1">{submittedFormData.productReviews}</p>
-                    </div>
-                  )}
-                  {productImages.length > 0 && (
-                    <div>
-                      <span className="font-medium text-gray-700">Product Images: </span>
-                      <div className="grid grid-cols-3 gap-2 mt-2">
-                        {productImages.map((image, index) => (
-                          <img 
-                            key={index} 
-                            src={image.preview} 
-                            alt={`Product ${index + 1}`} 
-                            className="w-full h-20 object-cover rounded"
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+          <ProductForm 
+            onSubmit={onSubmit} 
+            isGenerating={isGenerating} 
+            productImages={productImages} 
+            setProductImages={setProductImages} 
+          />
 
           {/* Results Section */}
           <div className="space-y-8">
