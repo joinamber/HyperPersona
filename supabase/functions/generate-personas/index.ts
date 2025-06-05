@@ -14,14 +14,24 @@ const corsHeaders = {
 
 // Input validation helper functions
 function validateString(value: any, maxLength: number = 1000): string {
+  if (value === null || value === undefined) {
+    return '';
+  }
   if (typeof value !== 'string') {
-    throw new Error('Invalid input: expected string');
+    return String(value).slice(0, maxLength);
   }
   if (value.length > maxLength) {
-    throw new Error(`Input too long: maximum ${maxLength} characters allowed`);
+    return value.slice(0, maxLength);
   }
   // Remove potentially dangerous characters
   return value.replace(/[<>\"'&]/g, '');
+}
+
+function validateArray(value: any): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value.map(item => validateString(item, 100)).filter(Boolean);
 }
 
 function validateFormData(data: any) {
@@ -32,16 +42,17 @@ function validateFormData(data: any) {
   const validated = {
     productName: validateString(data.productName, 100),
     productDescription: validateString(data.productDescription, 2000),
-    targetAudience: validateString(data.targetAudience, 500),
-    keyFeatures: validateString(data.keyFeatures, 1000),
-    category: validateString(data.category, 50),
-    priceRange: validateString(data.priceRange, 50),
-    businessGoals: validateString(data.businessGoals, 1000)
+    productCategories: validateArray(data.productCategories),
+    productReviews: validateString(data.productReviews, 1000)
   };
 
   // Validate required fields
   if (!validated.productName || !validated.productDescription) {
     throw new Error('Product name and description are required');
+  }
+
+  if (validated.productDescription.length < 10) {
+    throw new Error('Product description must be at least 10 characters');
   }
 
   return validated;
@@ -54,18 +65,18 @@ function validateImages(images: any[]) {
   
   // Limit number of images
   if (images.length > 5) {
-    throw new Error('Maximum 5 images allowed');
+    return images.slice(0, 5);
   }
 
   return images.slice(0, 5).map(img => {
     if (typeof img !== 'object' || !img.url) {
-      throw new Error('Invalid image format');
+      return null;
     }
     return {
       url: validateString(img.url, 500),
       name: validateString(img.name || '', 100)
     };
-  });
+  }).filter(Boolean);
 }
 
 // Rate limiting helper (simple in-memory store)
@@ -92,6 +103,7 @@ function checkRateLimit(userId: string): boolean {
 
 // Sanitize AI output to prevent XSS
 function sanitizeOutput(text: string): string {
+  if (!text) return '';
   return text
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -168,11 +180,8 @@ serve(async (req) => {
 
 Product: ${validatedData.productName}
 Description: ${validatedData.productDescription}
-Target Audience: ${validatedData.targetAudience}
-Key Features: ${validatedData.keyFeatures}
-Category: ${validatedData.category}
-Price Range: ${validatedData.priceRange}
-Business Goals: ${validatedData.businessGoals}
+Categories: ${validatedData.productCategories.join(', ')}
+Customer Reviews: ${validatedData.productReviews || 'No reviews provided'}
 
 Generate personas as a JSON object with a "personas" array. Each persona should include:
 - id (unique string)
@@ -240,7 +249,9 @@ Focus on diversity in demographics, psychographics, and behavior patterns. Make 
     // Sanitize AI output to prevent XSS
     const sanitizedPersonas = personas.map((persona: any) => ({
       ...persona,
+      id: persona.id || `persona-${Math.random().toString(36).substr(2, 9)}`,
       name: sanitizeOutput(persona.name || ''),
+      age: sanitizeOutput(persona.age || ''),
       occupation: sanitizeOutput(persona.occupation || ''),
       location: sanitizeOutput(persona.location || ''),
       reasoning: sanitizeOutput(persona.reasoning || ''),
