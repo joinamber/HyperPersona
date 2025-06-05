@@ -108,6 +108,11 @@ const ProductForm: React.FC<ProductFormProps> = ({
     },
   });
 
+  // Watch the product description to get real-time character count
+  const productDescription = form.watch("productDescription");
+  const descriptionLength = productDescription?.length || 0;
+  const isDescriptionValid = descriptionLength >= 300;
+
   // Handle form submission
   const handleSubmit = (values: FormValues) => {
     const formData = { ...values, productCategories: selectedCategories };
@@ -194,13 +199,32 @@ const ProductForm: React.FC<ProductFormProps> = ({
           <Label htmlFor="productDescription" className="block text-sm font-medium text-gray-700">
             Product Description
           </Label>
-          <Textarea
-            id="productDescription"
-            {...form.register("productDescription")}
-            rows={4}
-            placeholder="Enter product description"
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-          />
+          <div className="mt-1 relative">
+            <Textarea
+              id="productDescription"
+              {...form.register("productDescription")}
+              rows={4}
+              placeholder="Enter detailed product description (minimum 300 characters)"
+              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            />
+            <div className="flex justify-between items-center mt-2">
+              <p className="text-xs text-gray-500">
+                Minimum 300 characters required for better persona generation
+              </p>
+              <div className={`text-xs font-medium ${
+                isDescriptionValid 
+                  ? 'text-green-600' 
+                  : descriptionLength > 0 
+                    ? 'text-orange-600' 
+                    : 'text-gray-500'
+              }`}>
+                {descriptionLength}/300 characters
+                {isDescriptionValid && (
+                  <span className="ml-1 text-green-600">✓</span>
+                )}
+              </div>
+            </div>
+          </div>
           {form.formState.errors.productDescription && (
             <p className="text-red-500 text-sm mt-1">{form.formState.errors.productDescription.message}</p>
           )}
