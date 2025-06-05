@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -49,6 +48,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   setProductImages 
 }) => {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
 
   // Initialize react-hook-form
   const form = useForm<FormValues>({
@@ -69,7 +69,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
   // Handle form submission
   const handleSubmit = (values: FormValues) => {
     const formData = { ...values, productCategories: selectedCategories };
+    setHasSubmitted(true);
     onSubmit(formData);
+    // Don't reset the form after submission
   };
 
   // Handle category tag selection
@@ -147,7 +149,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
         <SubmitButton 
           isGenerating={isGenerating}
-          label="Generate Personas"
+          label={hasSubmitted ? "Generate More Personas" : "Generate Personas"}
           loadingLabel="Generating Personas..."
         />
       </form>
