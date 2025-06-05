@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -16,27 +16,9 @@ const HyperPersona = () => {
   const [productImages, setProductImages] = useState<ProductImage[]>([]);
   const [personas, setPersonas] = useState<Persona[]>([]);
   const { toast } = useToast();
-  const { user, loading } = useAuth();
+  const { user, loading, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate('/auth');
-    }
-  }, [user, loading, navigate]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-white to-indigo-50 flex items-center justify-center">
-        <div className="text-indigo-600">Loading...</div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null; // Will redirect to auth page
-  }
-  
   const refreshPersona = (personaId: string) => {
     toast({
       title: "Refreshing persona",
@@ -59,6 +41,24 @@ const HyperPersona = () => {
   };
 
   const onSubmit = async (data: FormValues) => {
+    // Check if user is authenticated, if not, redirect to login
+    if (!user) {
+      try {
+        await signInWithGoogle();
+        // After successful login, the form submission will be handled by the useEffect below
+        return;
+      } catch (error) {
+        console.error('Sign in error:', error);
+        toast({
+          title: "Sign in failed",
+          description: "Please try signing in again to generate personas.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    // User is authenticated, proceed with persona generation
     setIsGenerating(true);
     try {
       console.log("Submitting form data to generate personas");
@@ -85,6 +85,14 @@ const HyperPersona = () => {
     window.location.href = 'mailto:hello@coaltlab.com';
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-white to-indigo-50 flex items-center justify-center">
+        <div className="text-indigo-600">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-indigo-50">
       <div className="container mx-auto px-4 py-12 max-w-7xl">
@@ -96,9 +104,11 @@ const HyperPersona = () => {
               Transform your product description into detailed customer personas with AI-powered insights
             </p>
           </div>
-          <div className="absolute top-4 right-4">
-            <UserProfile />
-          </div>
+          {user && (
+            <div className="absolute top-4 right-4">
+              <UserProfile />
+            </div>
+          )}
         </div>
 
         {/* Why Synthetic User Research Section */}
@@ -149,7 +159,7 @@ const HyperPersona = () => {
 
           {/* Results Section */}
           <div className="space-y-8">
-            {personas.length > 0 ? (
+            {user && personas.length > 0 ? (
               <>
                 <h2 className="text-2xl font-bold text-indigo-600">Your Customer Personas</h2>
                 {personas.map((persona) => (
