@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -16,8 +17,6 @@ const HyperPersona = () => {
   const [productImages, setProductImages] = useState<ProductImage[]>([]);
   const [personas, setPersonas] = useState<Persona[]>([]);
   const [hasSubmitted, setHasSubmitted] = useState(false);
-  const [submittedFormData, setSubmittedFormData] = useState<FormValues | null>(null);
-  const [submittedImages, setSubmittedImages] = useState<ProductImage[]>([]);
   const { toast } = useToast();
   const { user, loading, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
@@ -51,8 +50,6 @@ const HyperPersona = () => {
   const handlePersonaGeneration = async (data: FormValues, images: ProductImage[]) => {
     setIsGenerating(true);
     setHasSubmitted(true);
-    setSubmittedFormData(data);
-    setSubmittedImages(images);
     try {
       console.log("Submitting form data to generate personas");
       const response = await generatePersonas(data, images);
@@ -204,71 +201,12 @@ const HyperPersona = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
           {/* Input Form */}
-          <div className="space-y-6">
-            <ProductForm 
-              onSubmit={onSubmit} 
-              isGenerating={isGenerating} 
-              productImages={productImages} 
-              setProductImages={setProductImages} 
-            />
-            
-            {/* Display Submitted Form Details */}
-            {submittedFormData && (
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h3 className="text-xl font-bold text-indigo-600 mb-4">Submitted Product Details</h3>
-                
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
-                    <p className="text-gray-900 bg-gray-50 p-2 rounded border">{submittedFormData.productName}</p>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Product Description</label>
-                    <p className="text-gray-900 bg-gray-50 p-3 rounded border whitespace-pre-wrap">{submittedFormData.productDescription}</p>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Categories</label>
-                    <div className="flex flex-wrap gap-2">
-                      {submittedFormData.productCategories.map((category, index) => (
-                        <span 
-                          key={index}
-                          className="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm font-medium"
-                        >
-                          {category}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  {submittedFormData.productReviews && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Customer Reviews</label>
-                      <p className="text-gray-900 bg-gray-50 p-3 rounded border whitespace-pre-wrap">{submittedFormData.productReviews}</p>
-                    </div>
-                  )}
-                  
-                  {submittedImages.length > 0 && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Product Images</label>
-                      <div className="grid grid-cols-2 gap-3">
-                        {submittedImages.map((image, index) => (
-                          <div key={index} className="relative">
-                            <img 
-                              src={image.url} 
-                              alt={`Product ${index + 1}`}
-                              className="w-full h-24 object-cover rounded border"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+          <ProductForm 
+            onSubmit={onSubmit} 
+            isGenerating={isGenerating} 
+            productImages={productImages} 
+            setProductImages={setProductImages} 
+          />
 
           {/* Results Section */}
           <div className="space-y-8">

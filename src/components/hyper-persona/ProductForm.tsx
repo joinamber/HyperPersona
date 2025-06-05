@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -65,11 +66,10 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const descriptionLength = productDescription?.length || 0;
   const isDescriptionValid = descriptionLength >= 300;
 
-  // Handle form submission - DO NOT reset form
+  // Handle form submission
   const handleSubmit = (values: FormValues) => {
     const formData = { ...values, productCategories: selectedCategories };
     onSubmit(formData);
-    // Note: We intentionally do not reset the form here to preserve user input
   };
 
   // Handle category tag selection
