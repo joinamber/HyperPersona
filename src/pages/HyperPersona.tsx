@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -18,6 +18,55 @@ const HyperPersona = () => {
   const { toast } = useToast();
   const { user, loading, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
+
+  // Check for pending form submission after authentication
+  useEffect(() => {
+    if (user && !loading) {
+      const pendingFormData = localStorage.getItem('pendingFormData');
+      const pendingImages = localStorage.getItem('pendingProductImages');
+      
+      if (pendingFormData) {
+        try {
+          const formData = JSON.parse(pendingFormData);
+          const images = pendingImages ? JSON.parse(pendingImages) : [];
+          
+          // Clear the stored data
+          localStorage.removeItem('pendingFormData');
+          localStorage.removeItem('pendingProductImages');
+          
+          // Auto-submit the form
+          handlePersonaGeneration(formData, images);
+        } catch (error) {
+          console.error('Error processing pending form data:', error);
+          localStorage.removeItem('pendingFormData');
+          localStorage.removeItem('pendingProductImages');
+        }
+      }
+    }
+  }, [user, loading]);
+
+  const handlePersonaGeneration = async (data: FormValues, images: ProductImage[]) => {
+    setIsGenerating(true);
+    try {
+      console.log("Submitting form data to generate personas");
+      const response = await generatePersonas(data, images);
+      console.log("Response received:", response);
+      setPersonas(response.personas);
+      toast({
+        title: "Personas generated successfully!",
+        description: "View your customer personas below.",
+      });
+    } catch (error) {
+      console.error("Error in persona generation:", error);
+      toast({
+        title: "Error generating personas",
+        description: "Please try again or contact support.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const refreshPersona = (personaId: string) => {
     toast({
@@ -41,14 +90,27 @@ const HyperPersona = () => {
   };
 
   const onSubmit = async (data: FormValues) => {
-    // Check if user is authenticated, if not, redirect to login
+    // Check if user is authenticated, if not, store data and sign in
     if (!user) {
       try {
+        // Store form data and images before authentication
+        localStorage.setItem('pendingFormData', JSON.stringify(data));
+        localStorage.setItem('pendingProductImages', JSON.stringify(productImages));
+        
+        // Show a toast to inform user about the process
+        toast({
+          title: "Signing in...",
+          description: "We'll generate your personas after you sign in with Google.",
+        });
+        
         await signInWithGoogle();
-        // After successful login, the form submission will be handled by the useEffect below
+        // The useEffect above will handle form submission after successful login
         return;
       } catch (error) {
         console.error('Sign in error:', error);
+        // Clear stored data on error
+        localStorage.removeItem('pendingFormData');
+        localStorage.removeItem('pendingProductImages');
         toast({
           title: "Sign in failed",
           description: "Please try signing in again to generate personas.",
@@ -59,26 +121,7 @@ const HyperPersona = () => {
     }
 
     // User is authenticated, proceed with persona generation
-    setIsGenerating(true);
-    try {
-      console.log("Submitting form data to generate personas");
-      const response = await generatePersonas(data, productImages);
-      console.log("Response received:", response);
-      setPersonas(response.personas);
-      toast({
-        title: "Personas generated successfully!",
-        description: "View your customer personas below.",
-      });
-    } catch (error) {
-      console.error("Error in persona generation:", error);
-      toast({
-        title: "Error generating personas",
-        description: "Please try again or contact support.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGenerating(false);
-    }
+    await handlePersonaGeneration(data, productImages);
   };
 
   const handleContactClick = () => {
