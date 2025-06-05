@@ -275,7 +275,7 @@ const HyperPersona = () => {
             <div className="font-bold text-xl">HYPERPERSONA</div>
             <div className="text-sm text-indigo-200">© 2025 HyperPersona. All rights reserved.</div>
             <div className="text-sm text-right">
-              <div className="font-medium">A venture of Co.Alt Lab</div>
+              <div className="font-medium">A Venture of Co.Alt Lab</div>
               <div>hello@coaltlab.com</div>
             </div>
           </div>
