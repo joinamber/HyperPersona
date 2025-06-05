@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -181,7 +182,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <div>
           <Label htmlFor="productName" className="block text-sm font-medium text-gray-700">
-            Product Name
+            Product Name <span className="text-red-500">*</span>
+            <span className="text-xs text-gray-500 font-normal ml-1">(Required)</span>
           </Label>
           <Input
             id="productName"
@@ -197,7 +199,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
         <div>
           <Label htmlFor="productDescription" className="block text-sm font-medium text-gray-700">
-            Product Description
+            Product Description <span className="text-red-500">*</span>
+            <span className="text-xs text-gray-500 font-normal ml-1">(Required)</span>
           </Label>
           <div className="mt-1 relative">
             <Textarea
@@ -232,7 +235,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
         <div>
           <Label className="block text-sm font-medium text-gray-700 mb-2">
-            Category Tags (Select up to 5)
+            Category Tags <span className="text-red-500">*</span>
+            <span className="text-xs text-gray-500 font-normal ml-1">(Required - Select up to 5)</span>
           </Label>
           
           {/* Selected Tags Display */}
@@ -292,20 +296,22 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
         <div>
           <Label htmlFor="productReviews" className="block text-sm font-medium text-gray-700">
-            Customer Review Snippets (Optional)
+            Customer Review Snippets 
+            <span className="text-xs text-gray-500 font-normal ml-1">(Optional)</span>
           </Label>
           <Textarea
             id="productReviews"
             {...form.register("productReviews")}
             rows={3}
-            placeholder="Enter customer review snippets"
+            placeholder="Enter customer review snippets (optional)"
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           />
         </div>
 
         <div>
           <Label className="block text-sm font-medium text-gray-700">
-            Product Images
+            Product Images 
+            <span className="text-xs text-gray-500 font-normal ml-1">(Optional)</span>
           </Label>
           <div className="mt-1 flex items-center justify-center w-full">
             <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-indigo-300 border-dashed rounded-lg cursor-pointer bg-indigo-50 hover:bg-indigo-100">
