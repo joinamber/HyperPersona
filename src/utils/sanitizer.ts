@@ -3,19 +3,19 @@
 export function sanitizeText(text: string): string {
   if (!text) return '';
   
+  // Only remove truly dangerous content, preserve normal punctuation and apostrophes
   return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
-    .replace(/\//g, '&#x2F;');
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
+    .replace(/<[^>]*>/g, '') // Remove HTML tags
+    .replace(/javascript:/gi, '') // Remove javascript: protocol
+    .replace(/on\w+=/gi, '') // Remove event handlers
+    .trim();
 }
 
 // Sanitize arrays of strings
 export function sanitizeArray(arr: string[]): string[] {
   if (!Array.isArray(arr)) return [];
-  return arr.map(item => sanitizeText(item));
+  return arr.map(item => sanitizeText(item)).filter(Boolean);
 }
 
 // Validate and sanitize persona data
