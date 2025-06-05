@@ -112,6 +112,29 @@ function sanitizeOutput(text: string): string {
     .replace(/\//g, '&#x2F;');
 }
 
+// Helper function to extract JSON from AI response
+function extractJSON(text: string): any {
+  try {
+    // First try to parse as-is
+    return JSON.parse(text);
+  } catch (e) {
+    console.log('Direct JSON parse failed, trying to extract...');
+    
+    // Try to find JSON within the text
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      try {
+        return JSON.parse(jsonMatch[0]);
+      } catch (e2) {
+        console.log('Extracted JSON parse failed:', e2);
+      }
+    }
+    
+    // If no JSON found, throw error
+    throw new Error('No valid JSON found in response');
+  }
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -176,27 +199,33 @@ serve(async (req) => {
     }
 
     // Prepare the prompt for persona generation
-    const prompt = `Based on the following product information, generate 3-4 detailed customer personas in JSON format:
+    const prompt = `You are a marketing research expert. Generate 3-4 detailed customer personas for this product in VALID JSON format ONLY.
 
 Product: ${validatedData.productName}
 Description: ${validatedData.productDescription}
 Categories: ${validatedData.productCategories.join(', ')}
 Customer Reviews: ${validatedData.productReviews || 'No reviews provided'}
 
-Generate personas as a JSON object with a "personas" array. Each persona should include:
-- id (unique string)
-- name (realistic full name)
-- age (age range like "25-35")
-- occupation
-- location (city/region)
-- interests (array of 3-5 interests)
-- values (array of 3-4 core values)
-- purchaseBehavior (array of 3-4 buying patterns)
-- reasoning (why this persona would be interested in the product)
-- researchQuestions (array of 3-4 questions to validate this persona)
-- marketingChannel (best channel to reach this persona)
+Return ONLY a JSON object with this exact structure:
+{
+  "personas": [
+    {
+      "id": "unique-id-1",
+      "name": "Full Name",
+      "age": "25-35",
+      "occupation": "Job Title",
+      "location": "City, Country",
+      "interests": ["interest1", "interest2", "interest3"],
+      "values": ["value1", "value2", "value3"],
+      "purchaseBehavior": ["behavior1", "behavior2", "behavior3"],
+      "reasoning": "Why this persona would be interested in the product",
+      "researchQuestions": ["question1", "question2", "question3"],
+      "marketingChannel": "best channel to reach this persona"
+    }
+  ]
+}
 
-Focus on diversity in demographics, psychographics, and behavior patterns. Make personas realistic and actionable for marketing purposes.`;
+Generate diverse personas with realistic details. Return ONLY valid JSON, no additional text.`;
 
     // Call Groq API with security headers
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -211,7 +240,7 @@ Focus on diversity in demographics, psychographics, and behavior patterns. Make 
         messages: [
           {
             role: 'system',
-            content: 'You are a marketing research expert. Generate customer personas in valid JSON format only. Do not include any text outside the JSON response.'
+            content: 'You are a marketing research expert. Generate customer personas in valid JSON format only. Do not include any text outside the JSON response. Always start your response with { and end with }.'
           },
           {
             role: 'user',
@@ -236,30 +265,43 @@ Focus on diversity in demographics, psychographics, and behavior patterns. Make 
       throw new Error('No content generated from AI');
     }
 
-    // Parse and validate the AI response
+    console.log('AI Response content:', generatedContent);
+
+    // Parse and validate the AI response with improved error handling
     let personas;
     try {
-      const parsedResponse = JSON.parse(generatedContent);
+      const parsedResponse = extractJSON(generatedContent);
       personas = parsedResponse.personas || [];
+      
+      if (!Array.isArray(personas)) {
+        console.error('Personas is not an array:', personas);
+        throw new Error('Invalid response format: personas must be an array');
+      }
+      
+      if (personas.length === 0) {
+        console.error('No personas generated');
+        throw new Error('No personas were generated');
+      }
+      
     } catch (e) {
-      console.error('Failed to parse AI response as JSON:', e);
+      console.error('Failed to parse AI response:', e);
+      console.error('Raw response:', generatedContent);
       throw new Error('Invalid response format from AI');
     }
 
     // Sanitize AI output to prevent XSS
-    const sanitizedPersonas = personas.map((persona: any) => ({
-      ...persona,
-      id: persona.id || `persona-${Math.random().toString(36).substr(2, 9)}`,
-      name: sanitizeOutput(persona.name || ''),
-      age: sanitizeOutput(persona.age || ''),
-      occupation: sanitizeOutput(persona.occupation || ''),
-      location: sanitizeOutput(persona.location || ''),
-      reasoning: sanitizeOutput(persona.reasoning || ''),
-      marketingChannel: sanitizeOutput(persona.marketingChannel || ''),
-      interests: Array.isArray(persona.interests) ? persona.interests.map((i: string) => sanitizeOutput(i)) : [],
-      values: Array.isArray(persona.values) ? persona.values.map((v: string) => sanitizeOutput(v)) : [],
-      purchaseBehavior: Array.isArray(persona.purchaseBehavior) ? persona.purchaseBehavior.map((p: string) => sanitizeOutput(p)) : [],
-      researchQuestions: Array.isArray(persona.researchQuestions) ? persona.researchQuestions.map((q: string) => sanitizeOutput(q)) : []
+    const sanitizedPersonas = personas.map((persona: any, index: number) => ({
+      id: persona.id || `persona-${Date.now()}-${index}`,
+      name: sanitizeOutput(persona.name || 'Unknown'),
+      age: sanitizeOutput(persona.age || '25-35'),
+      occupation: sanitizeOutput(persona.occupation || 'Professional'),
+      location: sanitizeOutput(persona.location || 'Unknown'),
+      reasoning: sanitizeOutput(persona.reasoning || 'Potential customer'),
+      marketingChannel: sanitizeOutput(persona.marketingChannel || 'Digital'),
+      interests: Array.isArray(persona.interests) ? persona.interests.map((i: string) => sanitizeOutput(i)).filter(Boolean) : [],
+      values: Array.isArray(persona.values) ? persona.values.map((v: string) => sanitizeOutput(v)).filter(Boolean) : [],
+      purchaseBehavior: Array.isArray(persona.purchaseBehavior) ? persona.purchaseBehavior.map((p: string) => sanitizeOutput(p)).filter(Boolean) : [],
+      researchQuestions: Array.isArray(persona.researchQuestions) ? persona.researchQuestions.map((q: string) => sanitizeOutput(q)).filter(Boolean) : []
     }));
 
     console.log(`Generated ${sanitizedPersonas.length} personas for user ${user.id}`);
