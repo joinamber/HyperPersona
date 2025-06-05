@@ -1,9 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import ProductForm, { ProductImage, FormValues } from '@/components/hyper-persona/ProductForm';
 import PersonaCard from '@/components/hyper-persona/PersonaCard';
 import EmptyState from '@/components/hyper-persona/EmptyState';
+import UserProfile from '@/components/UserProfile';
 import { generatePersonas, Persona } from '@/services/personaService';
 import { Zap, LineChart, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,6 +16,26 @@ const HyperPersona = () => {
   const [productImages, setProductImages] = useState<ProductImage[]>([]);
   const [personas, setPersonas] = useState<Persona[]>([]);
   const { toast } = useToast();
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/auth');
+    }
+  }, [user, loading, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-white to-indigo-50 flex items-center justify-center">
+        <div className="text-indigo-600">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null; // Will redirect to auth page
+  }
   
   const refreshPersona = (personaId: string) => {
     toast({
@@ -65,11 +88,17 @@ const HyperPersona = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-indigo-50">
       <div className="container mx-auto px-4 py-12 max-w-7xl">
-        <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold tracking-tight mb-4 text-indigo-600 font-sans">HyperPersona</h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Transform your product description into detailed customer personas with AI-powered insights
-          </p>
+        {/* Header with User Profile */}
+        <div className="flex justify-between items-center mb-8">
+          <div className="text-center flex-1">
+            <h1 className="text-5xl font-bold tracking-tight mb-4 text-indigo-600 font-sans">HyperPersona</h1>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              Transform your product description into detailed customer personas with AI-powered insights
+            </p>
+          </div>
+          <div className="absolute top-4 right-4">
+            <UserProfile />
+          </div>
         </div>
 
         {/* Why Synthetic User Research Section */}
