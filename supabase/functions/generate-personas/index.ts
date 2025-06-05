@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -100,11 +101,11 @@ function checkRateLimit(userId: string): boolean {
   return true;
 }
 
-// Improved sanitize function that preserves normal text but removes dangerous content
+// Updated sanitize function that preserves normal text and punctuation
 function sanitizeText(text: string): string {
   if (!text) return '';
   
-  // Only sanitize actual dangerous content, preserve normal punctuation
+  // Only remove truly dangerous content, preserve normal punctuation and apostrophes
   return text
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
     .replace(/<[^>]*>/g, '') // Remove HTML tags
@@ -290,7 +291,7 @@ Generate diverse personas with realistic details. Return ONLY valid JSON, no add
       throw new Error('Invalid response format from AI');
     }
 
-    // Apply minimal sanitization that preserves normal text
+    // Apply minimal sanitization that preserves normal text and punctuation
     const sanitizedPersonas = personas.map((persona: any, index: number) => ({
       id: persona.id || `persona-${Date.now()}-${index}`,
       name: sanitizeText(persona.name || 'Unknown'),
