@@ -70,8 +70,8 @@ const formSchema = z.object({
   productName: z.string().min(2, {
     message: "Product name must be at least 2 characters.",
   }),
-  productDescription: z.string().min(10, {
-    message: "Product description must be at least 10 characters.",
+  productDescription: z.string().min(300, {
+    message: "Product description must be at least 300 characters.",
   }),
   productCategories: z.array(z.string()).min(1, {
     message: "Please select at least one category tag.",
