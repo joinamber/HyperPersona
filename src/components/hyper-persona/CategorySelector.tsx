@@ -1,8 +1,9 @@
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { X, Search } from 'lucide-react';
 
 // Comprehensive list of category tags
 export const CATEGORY_TAGS = [
@@ -57,6 +58,17 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
   onCategoryToggle,
   errorMessage
 }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredCategories = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return CATEGORY_TAGS;
+    }
+    return CATEGORY_TAGS.filter(category =>
+      category.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [searchQuery]);
+
   return (
     <div>
       <Label className="block text-sm font-medium text-gray-700 mb-2">
@@ -82,32 +94,59 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
         )}
       </div>
 
+      {/* Search Input */}
+      <div className="mb-4 relative">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Input
+            type="text"
+            placeholder="Search categories..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 pr-10"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Available Tags Grid */}
       <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-md p-3 bg-white">
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-          {CATEGORY_TAGS.map((category) => {
-            const isSelected = selectedCategories.includes(category);
-            const isDisabled = !isSelected && selectedCategories.length >= 5;
-            
-            return (
-              <button
-                key={category}
-                type="button"
-                onClick={() => onCategoryToggle(category)}
-                disabled={isDisabled}
-                className={`px-3 py-2 text-sm rounded-md border transition-colors ${
-                  isSelected
-                    ? 'bg-indigo-100 border-indigo-300 text-indigo-700'
-                    : isDisabled
-                    ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
-                    : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 cursor-pointer'
-                }`}
-              >
-                {category}
-              </button>
-            );
-          })}
-        </div>
+        {filteredCategories.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            {filteredCategories.map((category) => {
+              const isSelected = selectedCategories.includes(category);
+              const isDisabled = !isSelected && selectedCategories.length >= 5;
+              
+              return (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => onCategoryToggle(category)}
+                  disabled={isDisabled}
+                  className={`px-3 py-2 text-sm rounded-md border transition-colors ${
+                    isSelected
+                      ? 'bg-indigo-100 border-indigo-300 text-indigo-700'
+                      : isDisabled
+                      ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 cursor-pointer'
+                  }`}
+                >
+                  {category}
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="text-gray-500 text-sm text-center py-4">No matching categories found</p>
+        )}
       </div>
       
       <p className="text-xs text-gray-500 mt-2">
