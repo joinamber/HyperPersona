@@ -8,6 +8,7 @@ import { ProductImage } from '@/components/hyper-persona/ImageUploader';
 import PersonaCard from '@/components/hyper-persona/PersonaCard';
 import EmptyState from '@/components/hyper-persona/EmptyState';
 import UserProfile from '@/components/UserProfile';
+import ContactModal from '@/components/ContactModal';
 import { generatePersonas, Persona } from '@/services/personaService';
 import { Zap, LineChart, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,8 @@ const HyperPersona = () => {
   const [personas, setPersonas] = useState<Persona[]>([]);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [currentFormData, setCurrentFormData] = useState<FormValues | undefined>(undefined);
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [isContactLoading, setIsContactLoading] = useState(false);
   const { toast } = useToast();
   const { user, loading, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
@@ -136,8 +139,45 @@ const HyperPersona = () => {
     await handlePersonaGeneration(data, productImages);
   };
 
-  const handleContactClick = () => {
-    window.location.href = 'mailto:hello@coaltlab.com';
+  const handleContactClick = async () => {
+    setIsContactLoading(true);
+    
+    try {
+      // Try to open email client
+      const mailtoLink = 'mailto:hello@coaltlab.com?subject=HyperPersona Inquiry&body=Hi, I\'m interested in learning more about HyperPersona...';
+      
+      // Create a temporary link and click it
+      const tempLink = document.createElement('a');
+      tempLink.href = mailtoLink;
+      tempLink.style.display = 'none';
+      document.body.appendChild(tempLink);
+      tempLink.click();
+      document.body.removeChild(tempLink);
+      
+      // Wait a moment to see if email client opens
+      setTimeout(() => {
+        setIsContactLoading(false);
+        toast({
+          title: "Email client opened",
+          description: "If your email client didn't open, use the contact form below.",
+        });
+        
+        // Show modal as fallback after a short delay
+        setTimeout(() => {
+          setIsContactModalOpen(true);
+        }, 2000);
+      }, 500);
+      
+    } catch (error) {
+      console.error('Error opening email client:', error);
+      setIsContactLoading(false);
+      setIsContactModalOpen(true);
+      toast({
+        title: "Email client unavailable",
+        description: "Please use the contact form or copy our email address.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (loading) {
@@ -261,9 +301,10 @@ const HyperPersona = () => {
           </p>
           <Button 
             onClick={handleContactClick}
-            className="bg-white text-indigo-600 hover:bg-indigo-50 text-lg px-8 py-6 h-auto font-semibold"
+            disabled={isContactLoading}
+            className="bg-white text-indigo-600 hover:bg-indigo-50 text-lg px-8 py-6 h-auto font-semibold disabled:opacity-50"
           >
-            Contact Us Today
+            {isContactLoading ? 'Opening Email...' : 'Contact Us Today'}
           </Button>
         </div>
       </div>
@@ -281,6 +322,12 @@ const HyperPersona = () => {
           </div>
         </div>
       </footer>
+
+      {/* Contact Modal */}
+      <ContactModal 
+        isOpen={isContactModalOpen}
+        onClose={() => setIsContactModalOpen(false)}
+      />
     </div>
   );
 };
