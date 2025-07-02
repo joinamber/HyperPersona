@@ -19,7 +19,7 @@ export const CATEGORY_TAGS = [
   'Home & Garden', 'Furniture', 'Kitchen', 'Appliances', 'Decor', 'Cleaning', 'Storage', 'Bedding', 'Lighting', 'Tools',
   
   // Food & Beverage
-  'Food', 'Beverages', 'Snacks', 'Organic', 'Gourmet', 'Dietary', 'Cooking', 'Baking', 'Coffee', 'Tea',
+  'Food', 'Beverages', 'Snacks', 'Gourmet', 'Dietary', 'Cooking', 'Baking', 'Coffee', 'Tea',
   
   // Sports & Outdoors
   'Sports', 'Outdoors', 'Recreation', 'Camping', 'Hiking', 'Water Sports', 'Winter Sports', 'Team Sports', 'Individual Sports',
@@ -43,7 +43,7 @@ export const CATEGORY_TAGS = [
   'Kids', 'Teens', 'Adults', 'Seniors', 'Baby', 'Toddler', 'Family', 'Men', 'Women', 'Unisex',
   
   // Price Points
-  'Budget', 'Mid-Range', 'Premium', 'Luxury', 'Affordable', 'Value', 'High-End', 'Economy'
+  'Budget', 'Mid-Range', 'Premium', 'Affordable', 'Value', 'High-End', 'Economy'
 ];
 
 interface CategorySelectorProps {
