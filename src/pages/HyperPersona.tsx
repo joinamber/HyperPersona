@@ -11,6 +11,16 @@ import UserProfile from '@/components/UserProfile';
 import { generatePersonas, Persona } from '@/services/personaService';
 import { Zap, LineChart, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 const HyperPersona = () => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -136,8 +146,20 @@ const HyperPersona = () => {
     await handlePersonaGeneration(data, productImages);
   };
 
-  const handleContactClick = () => {
-    window.location.href = 'mailto:hello@coaltlab.com';
+  const copyEmailToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText('hello@coaltlab.com');
+      toast({
+        title: "Email copied!",
+        description: "hello@coaltlab.com has been copied to your clipboard.",
+      });
+    } catch (err) {
+      toast({
+        title: "Copy failed",
+        description: "Please manually copy: hello@coaltlab.com",
+        variant: "destructive",
+      });
+    }
   };
 
   if (loading) {
@@ -259,12 +281,29 @@ const HyperPersona = () => {
           <p className="text-xl text-indigo-100 mb-8 max-w-2xl mx-auto">
             Join forward-thinking companies using AI-powered personas to gain deeper insights, faster and more affordably.
           </p>
-          <Button 
-            onClick={handleContactClick}
-            className="bg-white text-indigo-600 hover:bg-indigo-50 text-lg px-8 py-6 h-auto font-semibold"
-          >
-            Contact Us Today
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button className="bg-white text-indigo-600 hover:bg-indigo-50 text-lg px-8 py-6 h-auto font-semibold">
+                Contact Us Today
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Get in Touch</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Ready to transform your user research? Contact us at:
+                  <div className="mt-4 p-4 bg-indigo-50 rounded-md">
+                    <div className="text-lg font-semibold text-indigo-600">hello@coaltlab.com</div>
+                  </div>
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogAction onClick={copyEmailToClipboard}>
+                  Copy Email
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 
