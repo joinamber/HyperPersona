@@ -3,6 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import SecureStorage from '@/utils/secureStorage';
+import { securityLogger, SecurityEventType } from '@/utils/securityLogger';
+import { apiRateLimiter, getClientIdentifier } from '@/utils/rateLimiter';
 import ProductForm, { FormValues } from '@/components/hyper-persona/ProductForm';
 import { ProductImage } from '@/components/hyper-persona/ImageUploader';
 import PersonaCard from '@/components/hyper-persona/PersonaCard';
@@ -35,8 +38,8 @@ const HyperPersona = () => {
   // Check for pending form submission after authentication
   useEffect(() => {
     if (user && !loading) {
-      const pendingFormData = localStorage.getItem('pendingFormData');
-      const pendingImages = localStorage.getItem('pendingProductImages');
+      const pendingFormData = SecureStorage.getItem('pendingFormData');
+      const pendingImages = SecureStorage.getItem('pendingProductImages');
       
       if (pendingFormData) {
         try {
@@ -48,27 +51,53 @@ const HyperPersona = () => {
           setProductImages(images);
           
           // Clear the stored data
-          localStorage.removeItem('pendingFormData');
-          localStorage.removeItem('pendingProductImages');
+          SecureStorage.removeItem('pendingFormData');
+          SecureStorage.removeItem('pendingProductImages');
           
           // Auto-submit the form
           handlePersonaGeneration(formData, images);
         } catch (error) {
           console.error('Error processing pending form data:', error);
-          localStorage.removeItem('pendingFormData');
-          localStorage.removeItem('pendingProductImages');
+          SecureStorage.removeItem('pendingFormData');
+          SecureStorage.removeItem('pendingProductImages');
         }
       }
     }
   }, [user, loading]);
 
   const handlePersonaGeneration = async (data: FormValues, images: ProductImage[]) => {
+    // Check rate limit
+    const clientId = getClientIdentifier();
+    const rateLimitCheck = apiRateLimiter.checkLimit(clientId);
+    
+    if (!rateLimitCheck.allowed) {
+      toast({
+        title: "Too many requests",
+        description: `Please wait ${rateLimitCheck.retryAfter} seconds before trying again.`,
+        variant: "destructive",
+      });
+      securityLogger.log(SecurityEventType.RATE_LIMIT_EXCEEDED, { endpoint: 'generatePersonas' }, 'high');
+      return;
+    }
+
     setIsGenerating(true);
     setHasSubmitted(true);
+    
+    // Log form submission
+    securityLogger.log(SecurityEventType.FORM_SUBMISSION, {
+      productName: data.productName,
+      hasImages: images.length > 0,
+      imageCount: images.length
+    }, 'low');
+
     try {
-      console.log("Submitting form data to generate personas");
+      if (process.env.NODE_ENV === 'development') {
+        console.log("Submitting form data to generate personas");
+      }
       const response = await generatePersonas(data, images);
-      console.log("Response received:", response);
+      if (process.env.NODE_ENV === 'development') {
+        console.log("Response received:", response);
+      }
       setPersonas(response.personas);
       toast({
         title: "Personas generated successfully!",
@@ -76,6 +105,10 @@ const HyperPersona = () => {
       });
     } catch (error) {
       console.error("Error in persona generation:", error);
+      securityLogger.log(SecurityEventType.SUSPICIOUS_ACTIVITY, {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        endpoint: 'generatePersonas'
+      }, 'medium');
       toast({
         title: "Error generating personas",
         description: "Please try again or contact support.",
@@ -115,9 +148,9 @@ const HyperPersona = () => {
     // Check if user is authenticated, if not, store data and sign in
     if (!user) {
       try {
-        // Store form data and images before authentication
-        localStorage.setItem('pendingFormData', JSON.stringify(data));
-        localStorage.setItem('pendingProductImages', JSON.stringify(productImages));
+        // Store form data and images securely before authentication
+        SecureStorage.setItem('pendingFormData', JSON.stringify(data), 30 * 60 * 1000); // 30 minutes
+        SecureStorage.setItem('pendingProductImages', JSON.stringify(productImages), 30 * 60 * 1000);
         
         // Show a toast to inform user about the process
         toast({
@@ -131,8 +164,8 @@ const HyperPersona = () => {
       } catch (error) {
         console.error('Sign in error:', error);
         // Clear stored data on error
-        localStorage.removeItem('pendingFormData');
-        localStorage.removeItem('pendingProductImages');
+        SecureStorage.removeItem('pendingFormData');
+        SecureStorage.removeItem('pendingProductImages');
         toast({
           title: "Sign in failed",
           description: "Please try signing in again to generate personas.",

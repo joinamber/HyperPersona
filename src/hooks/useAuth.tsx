@@ -2,6 +2,8 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { logAuthSuccess, logAuthFailure } from '@/utils/securityLogger';
+import { authRateLimiter, getClientIdentifier } from '@/utils/rateLimiter';
 
 interface AuthContextType {
   user: User | null;
@@ -22,7 +24,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Auth state changed:', event, session?.user?.email);
+        }
+        
+        // Log auth events
+        if (event === 'SIGNED_IN' && session?.user) {
+          logAuthSuccess(session.user.id);
+        } else if (event === 'SIGNED_OUT') {
+          // Clear any sensitive data on sign out
+          localStorage.removeItem('pendingFormData');
+          localStorage.removeItem('pendingProductImages');
+        }
+        
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -40,6 +54,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signInWithGoogle = async () => {
+    // Check rate limit
+    const clientId = getClientIdentifier();
+    const rateLimitCheck = authRateLimiter.checkLimit(clientId);
+    
+    if (!rateLimitCheck.allowed) {
+      const error = new Error(`Rate limit exceeded. Try again in ${rateLimitCheck.retryAfter} seconds.`);
+      logAuthFailure('Rate limit exceeded');
+      throw error;
+    }
+
     // Use the current origin instead of hardcoded localhost
     // This ensures it works on both development and production environments
     const redirectUrl = window.location.origin + window.location.pathname;
@@ -53,6 +77,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     if (error) {
       console.error('Error signing in with Google:', error);
+      logAuthFailure(error.message);
       throw error;
     }
   };
