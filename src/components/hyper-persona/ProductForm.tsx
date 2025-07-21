@@ -64,12 +64,15 @@ const ProductForm: React.FC<ProductFormProps> = ({
     },
   });
 
-  // Only update form when initialValues change AND we haven't initialized yet
+  // Update form when initialValues change
   useEffect(() => {
-    if (initialValues && !hasInitialized) {
+    if (initialValues) {
+      // Always reset the form when we receive initial values
       form.reset(initialValues);
       setSelectedCategories(initialValues.productCategories || []);
-      setHasInitialized(true);
+      if (!hasInitialized) {
+        setHasInitialized(true);
+      }
     }
   }, [initialValues, form, hasInitialized]);
 
