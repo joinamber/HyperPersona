@@ -51,6 +51,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   initialValues 
 }) => {
   const [selectedCategories, setSelectedCategories] = useState<string[]>(initialValues?.productCategories || []);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   // Initialize react-hook-form
   const form = useForm<FormValues>({
@@ -63,13 +64,14 @@ const ProductForm: React.FC<ProductFormProps> = ({
     },
   });
 
-  // Update form when initialValues change (after authentication)
+  // Only update form when initialValues change AND we haven't initialized yet
   useEffect(() => {
-    if (initialValues) {
+    if (initialValues && !hasInitialized) {
       form.reset(initialValues);
       setSelectedCategories(initialValues.productCategories || []);
+      setHasInitialized(true);
     }
-  }, [initialValues, form]);
+  }, [initialValues, form, hasInitialized]);
 
   // Watch the product description to get real-time character count
   const productDescription = form.watch("productDescription");
