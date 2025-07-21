@@ -13,13 +13,19 @@ class SecureStorage {
   // Simple encryption/decryption using base64 encoding with salt
   private static encrypt(data: string): string {
     const salt = Math.random().toString(36).substring(2);
-    const encoded = btoa(salt + data);
+    // Convert Unicode string to UTF-8 bytes, then to base64
+    const utf8Data = new TextEncoder().encode(salt + data);
+    const binaryString = Array.from(utf8Data, byte => String.fromCharCode(byte)).join('');
+    const encoded = btoa(binaryString);
     return encoded;
   }
 
   private static decrypt(data: string): string {
     try {
-      const decoded = atob(data);
+      // Decode base64 to binary string, then to UTF-8
+      const binaryString = atob(data);
+      const utf8Data = new Uint8Array(binaryString.split('').map(char => char.charCodeAt(0)));
+      const decoded = new TextDecoder().decode(utf8Data);
       return decoded.substring(10); // Remove salt
     } catch {
       return '';
