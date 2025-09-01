@@ -238,7 +238,7 @@ Generate diverse personas with realistic details. Return ONLY valid JSON, no add
         'User-Agent': 'HyperPersona/1.0',
       },
       body: JSON.stringify({
-        model: 'llama3-8b-8192',
+        model: 'llama-3.1-70b-versatile',
         messages: [
           {
             role: 'system',
