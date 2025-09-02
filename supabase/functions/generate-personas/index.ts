@@ -229,38 +229,74 @@ Return ONLY a JSON object with this exact structure:
 
 Generate diverse personas with realistic details. Return ONLY valid JSON, no additional text or formatting.`;
 
-    // Call Groq API with security headers
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${groqApiKey}`,
-        'Content-Type': 'application/json',
-        'User-Agent': 'HyperPersona/1.0',
-      },
-      body: JSON.stringify({
-        model: 'llama-3.1-70b-versatile',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a marketing research expert. Generate customer personas in valid JSON format only. Do not include any text outside the JSON response. Always start your response with { and end with }. Use proper quotes and avoid special characters that could break JSON parsing.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 2000,
-      }),
-    });
+    // Call Groq API with automatic model fallback
+    const modelCandidates = ['llama-3.3-70b-versatile', 'mixtral-8x7b-32768'];
+    let aiResponse: any = null;
+    let usedModel: string | null = null;
+    let lastError: { status: number; body: string } | null = null;
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Groq API error:', response.status, errorText);
+    for (const model of modelCandidates) {
+      console.log(`Attempting Groq model: ${model}`);
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${groqApiKey}`,
+          'Content-Type': 'application/json',
+          'User-Agent': 'HyperPersona/1.0',
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a marketing research expert. Generate customer personas in valid JSON format only. Do not include any text outside the JSON response. Always start your response with { and end with }. Use proper quotes and avoid special characters that could break JSON parsing.'
+            },
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 2000,
+        }),
+      });
+
+      if (res.ok) {
+        aiResponse = await res.json();
+        usedModel = model;
+        break;
+      } else {
+        const errorText = await res.text();
+        lastError = { status: res.status, body: errorText };
+        console.error(`Groq API error for model ${model}:`, res.status, errorText);
+
+        // Try to detect decommissioned/unsupported model errors and continue to next
+        try {
+          const parsed = JSON.parse(errorText);
+          const code = parsed?.error?.code || '';
+          const message = (parsed?.error?.message || '').toLowerCase();
+          if (code === 'model_decommissioned' || message.includes('decommissioned') || message.includes('not supported') || message.includes('unknown model')) {
+            continue; // try next model
+          } else {
+            throw new Error('Groq API returned non-retryable error');
+          }
+        } catch (_e) {
+          // If cannot parse or unknown error, try next model only if status is 400 and looks like model issue
+          if (errorText.toLowerCase().includes('model') && (errorText.toLowerCase().includes('decommission') || errorText.toLowerCase().includes('not found') || errorText.toLowerCase().includes('unsupported'))) {
+            continue;
+          }
+          throw new Error('Failed to generate personas');
+        }
+      }
+    }
+
+    if (!aiResponse) {
+      const detail = lastError ? ` (${lastError.status})` : '';
+      console.error('All Groq model attempts failed' + detail, lastError?.body || '');
       throw new Error('Failed to generate personas');
     }
 
-    const aiResponse = await response.json();
+    console.log(`Using Groq model: ${usedModel}`);
     const generatedContent = aiResponse.choices[0]?.message?.content;
 
     if (!generatedContent) {
