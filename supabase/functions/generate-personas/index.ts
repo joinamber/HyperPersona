@@ -230,7 +230,7 @@ Return ONLY a JSON object with this exact structure:
 Generate diverse personas with realistic details. Return ONLY valid JSON, no additional text or formatting.`;
 
     // Call Groq API with automatic model fallback
-    const modelCandidates = ['llama-3.3-70b-versatile', 'mixtral-8x7b-32768'];
+    const modelCandidates = ['openai/gpt-oss-120b'];
     let aiResponse: any = null;
     let usedModel: string | null = null;
     let lastError: { status: number; body: string } | null = null;
