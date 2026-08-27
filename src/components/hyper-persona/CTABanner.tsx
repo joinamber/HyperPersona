@@ -16,25 +16,25 @@ interface CTABannerProps {
 
 const CTABanner = ({ copyEmailToClipboard }: CTABannerProps) => {
   return (
-    <div className="bg-indigo-600 py-16 mt-24">
+    <div className="bg-primary py-16 md:py-20 mt-4">
       <div className="container mx-auto px-4 max-w-4xl text-center">
-        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Ready to Transform Your User Research?</h2>
-        <p className="text-xl text-indigo-100 mb-8 max-w-2xl mx-auto">
-          Join forward-thinking companies using AI-powered personas to gain deeper insights, faster and more affordably.
+        <h2 className="text-3xl md:text-4xl text-primary-foreground mb-4">Ready to meet your customers?</h2>
+        <p className="text-lg md:text-xl text-primary-foreground/85 mb-8 max-w-2xl mx-auto font-light">
+          Join the makers and small teams using HyperPersona to understand who they're building for — before writing a line of code, or a line of ad copy.
         </p>
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button className="bg-white text-indigo-600 hover:bg-indigo-50 text-lg px-8 py-6 h-auto font-semibold">
-              Contact Us Today
+            <Button size="lg" variant="secondary" className="bg-background text-primary hover:bg-background/90 text-base px-8 py-6 h-auto font-medium">
+              Say Hello
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Get in Touch</AlertDialogTitle>
+              <AlertDialogTitle>Get in touch</AlertDialogTitle>
               <AlertDialogDescription>
-                Ready to transform your user research? Contact us at:
-                <div className="mt-4 p-4 bg-indigo-50 rounded-md">
-                  <div className="text-lg font-semibold text-indigo-600">hello@coaltlab.com</div>
+                We'd love to hear what you're building. Reach us at:
+                <div className="mt-4 p-4 bg-accent rounded-md">
+                  <div className="text-lg font-medium text-accent-foreground">hello@coaltlab.com</div>
                 </div>
               </AlertDialogDescription>
             </AlertDialogHeader>

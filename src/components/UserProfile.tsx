@@ -35,14 +35,14 @@ const UserProfile = () => {
           <img
             src={user.user_metadata.avatar_url}
             alt="Profile"
-            className="w-8 h-8 rounded-full border-2 border-white shadow-sm"
+            className="w-8 h-8 rounded-full border-2 border-card shadow-sm"
           />
         ) : (
-          <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center">
-            <User className="w-4 h-4 text-white" />
+          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+            <User className="w-4 h-4 text-primary-foreground" />
           </div>
         )}
-        <span className="text-sm font-medium text-indigo-600">
+        <span className="text-sm font-medium text-foreground">
           {user.user_metadata?.full_name || user.email}
         </span>
       </div>

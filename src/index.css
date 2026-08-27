@@ -6,35 +6,35 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 42 38% 96%;
+    --foreground: 20 16% 15%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 40 33% 98%;
+    --card-foreground: 20 16% 15%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 40 33% 98%;
+    --popover-foreground: 20 16% 15%;
 
-    --primary: 246 76% 50%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 14 63% 47%;
+    --primary-foreground: 40 38% 97%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 96 16% 34%;
+    --secondary-foreground: 40 38% 97%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 40 22% 91%;
+    --muted-foreground: 25 10% 42%;
 
-    --accent: 246 76% 96%;
-    --accent-foreground: 246 76% 50%;
+    --accent: 14 55% 91%;
+    --accent-foreground: 14 63% 33%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 72% 46%;
+    --destructive-foreground: 40 38% 97%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 246 76% 50%;
+    --border: 32 20% 86%;
+    --input: 32 20% 86%;
+    --ring: 14 63% 47%;
 
-    --radius: 0.5rem;
+    --radius: 0.25rem;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -92,14 +92,14 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Red Hat Text', sans-serif;
     margin: 0;
     padding: 0;
     overflow-x: hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold tracking-tight;
+    @apply font-serif font-medium tracking-tight;
   }
 
   h1 {
@@ -218,5 +218,21 @@
     height: 100vh;
     overflow: hidden;
     position: relative;
+  }
+
+  .eyebrow {
+    @apply font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground;
+  }
+
+  .hero-glow {
+    background: radial-gradient(
+      60% 60% at 30% 20%,
+      hsl(14 75% 80% / 0.55),
+      transparent 70%
+    ), radial-gradient(
+      55% 55% at 80% 10%,
+      hsl(96 30% 70% / 0.4),
+      transparent 70%
+    );
   }
 }

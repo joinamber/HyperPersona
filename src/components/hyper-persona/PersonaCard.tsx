@@ -39,7 +39,7 @@ const PersonaCard: React.FC<PersonaCardProps> = ({
   exportPersona 
 }) => {
   return (
-    <Card key={persona.id} className="overflow-hidden">
+    <Card key={persona.id} className="overflow-hidden rounded-2xl border-border/60">
       <CardHeader className="bg-muted/50">
         <div className="flex justify-between items-start">
           <div>

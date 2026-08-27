@@ -115,8 +115,8 @@ const HyperPersona = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-white to-indigo-50 flex items-center justify-center">
-        <div className="text-indigo-600">Loading...</div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="font-mono text-sm text-primary">loading…</div>
       </div>
     );
   }
@@ -126,23 +126,27 @@ const HyperPersona = () => {
   const showEmptyState = !hasSubmitted || (!showPersonas && !isGenerating);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-indigo-50">
-      <div className="container mx-auto px-4 py-12 max-w-7xl">
-        {/* Header with User Profile */}
-        <div className="flex justify-between items-center mb-8">
-          <div className="text-center flex-1">
-            <h1 className="text-5xl font-bold tracking-tight mb-4 text-indigo-600 font-sans">HyperPersona</h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Transform your product description into detailed customer personas with AI-powered insights
+    <div className="min-h-screen bg-background">
+      <header className="relative overflow-hidden border-b border-border/60">
+        <div className="hero-glow absolute inset-0" aria-hidden="true" />
+        <div className="container relative mx-auto px-4 py-16 md:py-24 max-w-7xl">
+          <div className="flex justify-between items-start mb-4">
+            <span className="eyebrow">HyperPersona</span>
+            {user && <UserProfile />}
+          </div>
+          <div className="max-w-3xl animate-fade-up">
+            <h1 className="text-5xl md:text-6xl leading-[1.05] mb-6">
+              <span className="italic">Know</span> the person<br />
+              you're building for
+            </h1>
+            <p className="text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed font-light">
+              Describe what you're making — a product, an app, a service, a half-formed idea — and HyperPersona sketches the people who'd actually want it. Built for founders, small teams, and agencies who'd rather start with a real customer than a guess.
             </p>
           </div>
-          {user && (
-            <div className="absolute top-4 right-4">
-              <UserProfile />
-            </div>
-          )}
         </div>
+      </header>
 
+      <div className="container mx-auto px-4 py-16 md:py-20 max-w-7xl">
         {/* Why Synthetic User Research Section */}
         <WhySyntheticResearch />
 

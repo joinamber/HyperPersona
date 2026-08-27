@@ -15,9 +15,10 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
   loadingLabel 
 }) => {
   return (
-    <Button 
-      type="submit" 
-      className="w-full bg-indigo-600 text-white hover:bg-indigo-700" 
+    <Button
+      type="submit"
+      className="w-full"
+      size="lg"
       disabled={isGenerating}
     >
       {isGenerating ? (

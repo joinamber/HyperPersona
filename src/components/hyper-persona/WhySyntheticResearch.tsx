@@ -2,37 +2,34 @@ import { Zap, LineChart, DollarSign } from 'lucide-react';
 
 const WhySyntheticResearch = () => {
   return (
-    <div className="mb-24">
-      <h2 className="text-3xl font-bold text-indigo-600 text-center mb-12">Why Synthetic User Research?</h2>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-100">
-          <div className="text-coral-500 mb-4">
-            <Zap size={32} className="text-orange-500" />
-          </div>
-          <h3 className="text-xl font-semibold text-indigo-600 mb-3">10x Faster Results</h3>
-          <p className="text-gray-600 leading-relaxed">
-            Get comprehensive user insights in hours instead of weeks. No more scheduling delays or participant no-shows.
+    <div className="mb-20 md:mb-28">
+      <div className="max-w-2xl mb-12">
+        <span className="eyebrow">Why HyperPersona</span>
+        <h2 className="text-3xl md:text-4xl mt-3">Research that keeps up with you</h2>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-card p-8 rounded-2xl border border-border/60">
+          <Zap size={28} strokeWidth={1.5} className="text-primary mb-5" />
+          <h3 className="text-xl mb-2">Hours, not weeks</h3>
+          <p className="text-muted-foreground leading-relaxed">
+            Skip the recruiting, scheduling, and no-shows. Detailed personas appear in about the time it takes to make coffee.
           </p>
         </div>
-        
-        <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-100">
-          <div className="text-coral-500 mb-4">
-            <LineChart size={32} className="text-orange-500" />
-          </div>
-          <h3 className="text-xl font-semibold text-indigo-600 mb-3">Unlimited Scale</h3>
-          <p className="text-gray-600 leading-relaxed">
-            Test with hundreds or thousands of synthetic users representing your exact target demographics.
+
+        <div className="bg-card p-8 rounded-2xl border border-border/60">
+          <LineChart size={28} strokeWidth={1.5} className="text-primary mb-5" />
+          <h3 className="text-xl mb-2">As many voices as you need</h3>
+          <p className="text-muted-foreground leading-relaxed">
+            Model hundreds of micro-segments for a new feature, or just the one persona that's been keeping you up at night.
           </p>
         </div>
-        
-        <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-100">
-          <div className="text-coral-500 mb-4">
-            <DollarSign size={32} className="text-orange-500" />
-          </div>
-          <h3 className="text-xl font-semibold text-indigo-600 mb-3">80% Cost Reduction</h3>
-          <p className="text-gray-600 leading-relaxed">
-            Dramatically reduce research costs while increasing the breadth and depth of insights.
+
+        <div className="bg-card p-8 rounded-2xl border border-border/60">
+          <DollarSign size={28} strokeWidth={1.5} className="text-primary mb-5" />
+          <h3 className="text-xl mb-2">Startup-friendly cost</h3>
+          <p className="text-muted-foreground leading-relaxed">
+            Get agency-grade research clarity without the agency-grade invoice — useful from the napkin-sketch stage onward.
           </p>
         </div>
       </div>

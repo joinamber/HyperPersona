@@ -35,24 +35,22 @@ const TextInputField: React.FC<TextInputFieldProps> = ({
 }) => {
   return (
     <div>
-      <Label htmlFor={id} className="block text-sm font-medium text-gray-700">
+      <Label htmlFor={id} className="eyebrow flex items-center gap-1 mb-2">
         {label}
-        {required && <span className="text-red-500"> *</span>}
-        {required ? (
-          <span className="text-xs text-gray-500 font-normal ml-1">(Required)</span>
-        ) : (
-          <span className="text-xs text-gray-500 font-normal ml-1">(Optional)</span>
-        )}
+        {required && <span className="text-primary">*</span>}
+        <span className="normal-case tracking-normal opacity-70">
+          {required ? '(Required)' : '(Optional)'}
+        </span>
       </Label>
-      
-      <div className="mt-1 relative">
+
+      <div className="relative">
         {type === "textarea" ? (
           <Textarea
             id={id}
             {...register}
             rows={rows}
             placeholder={placeholder}
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            className="block w-full text-sm"
           />
         ) : (
           <Input
@@ -60,33 +58,33 @@ const TextInputField: React.FC<TextInputFieldProps> = ({
             type="text"
             {...register}
             placeholder={placeholder}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            className="block w-full text-sm"
           />
         )}
-        
+
         {characterCount && (
           <div className="flex justify-between items-center mt-2">
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               {description}
             </p>
-            <div className={`text-xs font-medium ${
-              characterCount.valid 
-                ? 'text-green-600' 
-                : characterCount.current > 0 
-                  ? 'text-orange-600' 
-                  : 'text-gray-500'
+            <div className={`text-xs font-mono ${
+              characterCount.valid
+                ? 'text-secondary'
+                : characterCount.current > 0
+                  ? 'text-primary'
+                  : 'text-muted-foreground'
             }`}>
-              {characterCount.current}/{characterCount.required} characters
+              {characterCount.current}/{characterCount.required}
               {characterCount.valid && (
-                <span className="ml-1 text-green-600">✓</span>
+                <span className="ml-1">✓</span>
               )}
             </div>
           </div>
         )}
       </div>
-      
+
       {error && (
-        <p className="text-red-500 text-sm mt-1">{error}</p>
+        <p className="text-destructive text-sm mt-1">{error}</p>
       )}
     </div>
   );

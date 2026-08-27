@@ -71,17 +71,17 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
 
   return (
     <div>
-      <Label className="block text-sm font-medium text-gray-700 mb-2">
-        Category Tags <span className="text-red-500">*</span>
-        <span className="text-xs text-gray-500 font-normal ml-1">(Required - Select up to 5)</span>
+      <Label className="eyebrow flex items-center gap-1 mb-2">
+        Category Tags <span className="text-primary">*</span>
+        <span className="normal-case tracking-normal opacity-70">(Required - Select up to 5)</span>
       </Label>
-      
+
       {/* Selected Tags Display */}
-      <div className="mb-4 min-h-[40px] p-3 border border-gray-200 rounded-md bg-gray-50">
+      <div className="mb-4 min-h-[40px] p-3 border border-border rounded-md bg-muted/50">
         {selectedCategories.length > 0 ? (
           <div className="flex flex-wrap gap-2">
             {selectedCategories.map((category) => (
-              <Badge key={category} className="bg-indigo-100 text-indigo-700 rounded-full px-3 py-1 text-sm font-medium flex items-center gap-1">
+              <Badge key={category} className="bg-accent text-accent-foreground rounded-full px-3 py-1 text-sm font-medium flex items-center gap-1 hover:bg-accent">
                 {category}
                 <button type="button" onClick={() => onCategoryToggle(category)}>
                   <X className="w-3 h-3" />
@@ -90,14 +90,14 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
             ))}
           </div>
         ) : (
-          <p className="text-gray-500 text-sm">No categories selected</p>
+          <p className="text-muted-foreground text-sm">No categories selected</p>
         )}
       </div>
 
       {/* Search Input */}
       <div className="mb-4 relative">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
             type="text"
             placeholder="Search categories..."
@@ -109,7 +109,7 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
             <button
               type="button"
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
               <X className="w-4 h-4" />
             </button>
@@ -118,13 +118,13 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
       </div>
 
       {/* Available Tags Grid */}
-      <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-md p-3 bg-white">
+      <div className="max-h-48 overflow-y-auto border border-border rounded-md p-3 bg-card">
         {filteredCategories.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
             {filteredCategories.map((category) => {
               const isSelected = selectedCategories.includes(category);
               const isDisabled = !isSelected && selectedCategories.length >= 5;
-              
+
               return (
                 <button
                   key={category}
@@ -133,10 +133,10 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
                   disabled={isDisabled}
                   className={`px-3 py-2 text-sm rounded-md border transition-colors ${
                     isSelected
-                      ? 'bg-indigo-100 border-indigo-300 text-indigo-700'
+                      ? 'bg-accent border-primary/30 text-accent-foreground'
                       : isDisabled
-                      ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 cursor-pointer'
+                      ? 'bg-muted border-border text-muted-foreground/60 cursor-not-allowed'
+                      : 'bg-card border-border text-foreground hover:bg-muted cursor-pointer'
                   }`}
                 >
                   {category}
@@ -145,16 +145,16 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
             })}
           </div>
         ) : (
-          <p className="text-gray-500 text-sm text-center py-4">No matching categories found</p>
+          <p className="text-muted-foreground text-sm text-center py-4">No matching categories found</p>
         )}
       </div>
-      
-      <p className="text-xs text-gray-500 mt-2">
+
+      <p className="text-xs text-muted-foreground mt-2">
         Selected: {selectedCategories.length}/5 categories
       </p>
-      
+
       {errorMessage && (
-        <p className="text-red-500 text-sm mt-1">{errorMessage}</p>
+        <p className="text-destructive text-sm mt-1">{errorMessage}</p>
       )}
     </div>
   );

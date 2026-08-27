@@ -107,10 +107,10 @@ const ProductForm: React.FC<ProductFormProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-8 space-y-6">
-      <FormHeader 
-        title="Describe Your Product" 
-        subtitle="Tell us about your product and we'll generate detailed customer personas" 
+    <div className="bg-card rounded-2xl border border-border/60 p-8 md:p-10 space-y-6">
+      <FormHeader
+        title="Tell us about your product"
+        subtitle="The more specific you are, the more real your personas will feel."
       />
 
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">

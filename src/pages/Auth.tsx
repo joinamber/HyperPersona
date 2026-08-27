@@ -32,24 +32,24 @@ const Auth = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-white to-indigo-50 flex items-center justify-center">
-        <div className="text-indigo-600">Loading...</div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="font-mono text-sm text-primary">loading…</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-indigo-50 flex items-center justify-center">
+    <div className="min-h-screen bg-background hero-glow flex items-center justify-center">
       <div className="max-w-md w-full mx-4">
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="bg-card rounded-2xl border border-border/60 p-8">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-indigo-600 mb-2">Welcome to HyperPersona</h1>
-            <p className="text-gray-600">Sign in to create AI-powered customer personas</p>
+            <h1 className="text-3xl mb-2"><span className="italic">Welcome</span> to HyperPersona</h1>
+            <p className="text-muted-foreground">Sign in to start sketching your customer personas</p>
           </div>
 
           <Button
             onClick={handleGoogleSignIn}
-            className="w-full bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 flex items-center justify-center gap-3 py-6"
+            className="w-full bg-card text-foreground border border-border hover:bg-muted flex items-center justify-center gap-3 py-6"
             variant="outline"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -61,7 +61,7 @@ const Auth = () => {
             Continue with Google
           </Button>
 
-          <div className="mt-6 text-center text-sm text-gray-500">
+          <div className="mt-6 text-center text-sm text-muted-foreground">
             By signing in, you agree to our terms of service and privacy policy.
           </div>
         </div>

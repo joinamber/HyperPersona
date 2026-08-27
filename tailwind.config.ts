@@ -18,6 +18,15 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				sans: ['"Red Hat Text"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+				serif: ['Fraunces', 'ui-serif', 'Georgia', 'serif'],
+				mono: ['"Red Hat Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+			},
+			transitionTimingFunction: {
+				'out-quint': 'cubic-bezier(0.23, 1, 0.32, 1)',
+				'out-snap': 'cubic-bezier(0.835, 0.085, 0.005, 1)',
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -84,11 +93,22 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'fade-up': {
+					from: {
+						opacity: '0',
+						transform: 'translateY(16px)'
+					},
+					to: {
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-up': 'fade-up 0.7s cubic-bezier(0.23, 1, 0.32, 1) both'
 			}
 		}
 	},
