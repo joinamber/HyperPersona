@@ -97,22 +97,6 @@ const HyperPersona = () => {
     await handlePersonaGeneration(data, productImages);
   };
 
-  const copyEmailToClipboard = async () => {
-    try {
-      await navigator.clipboard.writeText('hello@coaltlab.com');
-      toast({
-        title: "Email copied!",
-        description: "hello@coaltlab.com has been copied to your clipboard.",
-      });
-    } catch (err) {
-      toast({
-        title: "Copy failed",
-        description: "Please manually copy: hello@coaltlab.com",
-        variant: "destructive",
-      });
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -174,7 +158,7 @@ const HyperPersona = () => {
       </div>
 
       {/* Bottom CTA Banner */}
-      <CTABanner copyEmailToClipboard={copyEmailToClipboard} />
+      <CTABanner />
 
       {/* Footer */}
       <Footer />
