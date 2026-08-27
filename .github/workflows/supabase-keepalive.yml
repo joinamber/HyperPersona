@@ -9,7 +9,8 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Supabase project
+      - name: Query Supabase database
         run: |
-          curl -sf "https://fnrercflzcudlhzesxzt.supabase.co/auth/v1/health" \
-            -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZucmVyY2ZsemN1ZGxoemVzeHp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ0MjU5MzksImV4cCI6MjA2MDAwMTkzOX0.GqdPanDjLC2kxgvTR0rNa0Dd8txfAfwlHMs4VMx11xc"
+          curl -sf "https://fnrercflzcudlhzesxzt.supabase.co/rest/v1/profiles?select=id&limit=1" \
+            -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZucmVyY2ZsemN1ZGxoemVzeHp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ0MjU5MzksImV4cCI6MjA2MDAwMTkzOX0.GqdPanDjLC2kxgvTR0rNa0Dd8txfAfwlHMs4VMx11xc" \
+            -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZucmVyY2ZsemN1ZGxoemVzeHp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ0MjU5MzksImV4cCI6MjA2MDAwMTkzOX0.GqdPanDjLC2kxgvTR0rNa0Dd8txfAfwlHMs4VMx11xc"
