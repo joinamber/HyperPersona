@@ -14,10 +14,10 @@ const EmptyState: React.FC = () => {
         <div>
           <h3 className="text-lg">Nobody here yet</h3>
           <p className="text-muted-foreground">
-            Fill out the form and hit "Generate Personas" — your first customer will show up right here.
+            Fill in your product details and hit Generate Personas — your first customer will show up right here.
           </p>
           <p className="text-xs text-muted-foreground mt-2">
-            HyperPersona reads your product details to find the people most likely to care.
+            HyperPersona reads your product to find the people most likely to buy it.
           </p>
         </div>
       </div>
