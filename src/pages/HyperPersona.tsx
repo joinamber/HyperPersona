@@ -136,11 +136,11 @@ const HyperPersona = () => {
           </div>
           <div className="max-w-3xl animate-fade-up">
             <h1 className="text-5xl md:text-6xl leading-[1.05] mb-6">
-              <span className="italic">Know</span> the person<br />
-              you're building for
+              Stop <span className="italic">guessing</span><br />
+              who you're building for
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed font-light">
-              Describe what you're making — a product, an app, a service, a half-formed idea — and HyperPersona sketches the people who'd actually want it. Built for founders, small teams, and agencies who'd rather start with a real customer than a guess.
+              Describe your product, even a half-formed idea, and HyperPersona sketches the customer who'd actually buy it. Ship with a real target, not a hunch.
             </p>
           </div>
         </div>
