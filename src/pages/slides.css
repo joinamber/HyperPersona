@@ -1,0 +1,3 @@
+/* Only the /slides route renders <code> blocks in Fira Code, so the font is
+   loaded with that route's chunk instead of blocking every page load. */
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap');

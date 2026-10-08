@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import './slides.css';
 import SlideContent from '@/components/SlideContent';
 import SlideControls from '@/components/SlideControls';
 import { slides } from '@/data/slideData';
