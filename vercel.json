@@ -1,4 +1,7 @@
 {
+  "rewrites": [
+    { "source": "/((?!assets/|_vercel/).*)", "destination": "/index.html" }
+  ],
   "headers": [
     {
       "source": "/assets/(.*)",
