@@ -1,10 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import ProductForm, { FormValues } from '@/components/hyper-persona/ProductForm';
 import { ProductImage } from '@/components/hyper-persona/ImageUploader';
 import UserProfile from '@/components/UserProfile';
+import Hero from '@/components/hyper-persona/Hero';
 import WhySyntheticResearch from '@/components/hyper-persona/WhySyntheticResearch';
 import PersonaResults from '@/components/hyper-persona/PersonaResults';
 import CTABanner from '@/components/hyper-persona/CTABanner';
@@ -97,10 +99,17 @@ const HyperPersona = () => {
     await handlePersonaGeneration(data, productImages);
   };
 
+  // index.html ships the hero as static HTML (see the note there). When it's
+  // present React renders only the rest of the page, so the hero is never
+  // replaced and its first paint stays the LCP. The fallback <Hero> covers
+  // client-side navigation back to "/" after the static copy has been removed.
+  const hasStaticHero = !!document.getElementById('static-hero');
+  const heroUserSlot = document.getElementById('hero-user-slot');
+
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="font-mono text-sm text-primary">loading…</div>
+    return hasStaticHero ? null : (
+      <div className="min-h-screen bg-background">
+        <Hero />
       </div>
     );
   }
@@ -110,25 +119,12 @@ const HyperPersona = () => {
   const showEmptyState = !hasSubmitted || (!showPersonas && !isGenerating);
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="relative overflow-hidden border-b border-border/60">
-        <div className="hero-glow absolute inset-0" aria-hidden="true" />
-        <div className="container relative mx-auto px-4 py-16 md:py-24 max-w-7xl">
-          <div className="flex justify-between items-start mb-4">
-            <span className="eyebrow">HyperPersona</span>
-            {user && <UserProfile />}
-          </div>
-          <div className="max-w-3xl animate-fade-up">
-            <h1 className="text-5xl md:text-6xl leading-[1.05] mb-6">
-              Stop <span className="italic">guessing</span><br />
-              who you're building for
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed font-light">
-              Describe your product, even a half-formed idea, and HyperPersona sketches the customer who'd actually buy it. Ship with a real target, not a hunch.
-            </p>
-          </div>
-        </div>
-      </header>
+    <div className={hasStaticHero ? 'bg-background' : 'min-h-screen bg-background'}>
+      {hasStaticHero ? (
+        user && heroUserSlot ? createPortal(<UserProfile />, heroUserSlot) : null
+      ) : (
+        <Hero userSlot={user ? <UserProfile /> : undefined} />
+      )}
 
       <div className="container mx-auto px-4 py-16 md:py-20 max-w-7xl">
         {/* Why Synthetic User Research Section */}

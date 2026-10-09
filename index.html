@@ -33,6 +33,34 @@
   </head>
 
   <body>
+    <!-- Static hero: real HTML so it paints before any JS loads and is never replaced
+         (replacing it would reset LCP to React's mount time). React renders only the rest
+         of the page below it and portals the signed-in user chip into #hero-user-slot.
+         Fallback copy for client-side navigation back to "/": src/components/hyper-persona/Hero.tsx -->
+    <div id="static-hero">
+      <header class="relative overflow-hidden border-b border-border/60">
+        <div class="hero-glow absolute inset-0" aria-hidden="true"></div>
+        <div class="container relative mx-auto px-4 py-16 md:py-24 max-w-7xl">
+          <div class="flex justify-between items-start mb-4">
+            <span class="eyebrow">HyperPersona</span>
+            <div id="hero-user-slot"></div>
+          </div>
+          <div class="max-w-3xl">
+            <h1 class="text-5xl md:text-6xl leading-[1.05] mb-6">Stop <span class="italic">guessing</span><br>who you're building for</h1>
+            <p class="text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed font-light">Describe your product, even a half-formed idea, and HyperPersona sketches the customer who'd actually buy it. Ship with a real target, not a hunch.</p>
+          </div>
+        </div>
+      </header>
+    </div>
+    <script>
+      if (location.pathname !== '/') document.getElementById('static-hero').remove();
+      else try {
+        // Returning signed-in visitors: reserve the user chip's height (36px) before first
+        // paint so the hero doesn't jump down when React mounts the chip into the slot.
+        if (Object.keys(localStorage).some(function (k) { return /^sb-.+-auth-token$/.test(k); }))
+          document.getElementById('hero-user-slot').style.minHeight = '36px';
+      } catch (e) {}
+    </script>
     <div id="root"></div>
     <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
