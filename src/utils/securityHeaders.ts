@@ -3,7 +3,7 @@
 export const SECURITY_HEADERS = {
   'Content-Security-Policy': [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://cdn.gpteng.co https://accounts.google.com",
+    "script-src 'self' 'unsafe-inline' https://accounts.google.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "img-src 'self' data: https: blob:",
     "font-src 'self' https://fonts.gstatic.com",
